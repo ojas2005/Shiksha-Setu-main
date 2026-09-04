@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Shiksha Setu — Clickable Prototype</title>
+<style>
+:root{--ink:#1e3033;--muted:#6d7c7c;--line:#dfe7e4;--teal:#0b6e69;--teal-dark:#075653;--mint:#e1f2ee;--orange:#c86b36;--bg:#f6f8f7;--shadow:0 12px 30px rgba(24,57,55,.10)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#0f2624;font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;color:var(--ink)}
+button{font:inherit;cursor:pointer;border:0;background:none}
+input,select{font:inherit}
+a{color:inherit;text-decoration:none}
+
+/* ---------- Desktop wrapper: shows a realistic phone frame ---------- */
+.desk-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px;gap:26px;flex-wrap:wrap}
+.desk-note{color:#cfe7e2;max-width:230px;font-size:13px;line-height:1.6}
+.desk-note strong{display:block;color:#fff;font-size:15px;margin-bottom:8px}
+.phone{width:390px;height:844px;background:#000;border-radius:52px;padding:14px;box-shadow:0 40px 80px rgba(0,0,0,.5);position:relative;flex:none}
+.phone:before{content:'';position:absolute;top:32px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#000;border-radius:20px;z-index:5}
+.screen{width:100%;height:100%;background:var(--bg);border-radius:38px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+
+/* On an actual phone browser, drop the frame entirely -> true full-screen app */
+@media (max-width:480px){
+  .desk-wrap{padding:0;display:block}
+  .desk-note{display:none}
+  .phone{width:100%;height:100vh;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  .phone:before{display:none}
+  .screen{border-radius:0}
+}
+
+/* ---------- status bar ---------- */
+.statusbar{height:26px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:11px;font-weight:700;color:#12312e;background:var(--bg)}
+
+/* ---------- scrollable app body ---------- */
+.app-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
+.view{display:none;padding:16px 16px 90px;animation:fade .18s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- shared bits ---------- */
+.eyebrow{text-transform:uppercase;letter-spacing:1.2px;font-size:10px;font-weight:800;color:var(--teal);margin:0 0 6px}
+.muted{color:var(--muted);font-size:12px;line-height:1.5;margin:0}
+h1.page-title{font-size:24px;margin:0 0 4px;letter-spacing:-.3px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:11px;padding:12px 16px;font-weight:700;font-size:13px;width:100%}
+.btn.primary{background:var(--teal);color:#fff}
+.btn.primary:active{background:var(--teal-dark)}
+.btn.secondary{background:var(--mint);color:var(--teal)}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px;background:#edf2f0;color:#60716f}
+.tag.success{background:#e1f1eb;color:#29765f}
+.tag.warning{background:#f8edd8;color:#977125}
+.tag.danger{background:#fbe4e0;color:#a8452d}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.icon{width:20px;height:20px;flex:none;display:inline-flex;align-items:center;justify-content:center}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--mint);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
+.notice{background:#e3f1ed;border:1px solid #cde5de;border-radius:12px;padding:12px;display:flex;gap:10px;margin-bottom:12px;color:var(--teal)}
+.notice b{display:block;font-size:12px}
+.notice span{font-size:11px;color:#53716d}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat strong{display:block;font-size:20px}
+.stat span{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+
+/* toolbar/search */
+.search{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;margin-bottom:10px}
+.search input{border:0;outline:0;width:100%;font-size:12px;background:transparent}
+.tabs{display:flex;gap:4px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:8px 13px;border-radius:20px;font-size:11.5px;font-weight:700;color:var(--muted);background:#eef3f1;white-space:nowrap}
+.tab.active{background:var(--teal);color:#fff}
+
+/* list rows */
+.list-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #eef2f0}
+.list-row:last-child{border-bottom:0}
+.list-row .main{flex:1;min-width:0}
+.list-row strong{display:block;font-size:12.5px}
+.list-row small{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.chev{color:#b7c4c1;flex:none}
+
+/* level chip */
+.level-dot{width:24px;height:24px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex:none}
+
+/* bottom tab bar */
+.tabbar{flex:none;display:flex;border-top:1px solid var(--line);background:#fff;padding:6px 4px calc(6px + env(safe-area-inset-bottom));position:relative;z-index:2}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;color:#93a4a1;font-size:9.5px;font-weight:700;border-radius:10px}
+.tabbar button.active{color:var(--teal)}
+.tabbar svg{width:20px;height:20px}
+
+/* top app bar inside a view */
+.topbar{display:flex;align-items:center;gap:10px;padding:14px 16px 2px}
+.topbar .back{width:32px;height:32px;border-radius:9px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+.topbar .title{flex:1;font-weight:800;font-size:14px}
+.topbar .pill{font-size:10px;background:var(--mint);color:var(--teal);padding:4px 8px;border-radius:8px;font-weight:700}
+
+/* ---------- Login screen ---------- */
+.login-screen{flex:1;display:flex;flex-direction:column;justify-content:center;padding:26px;background:linear-gradient(180deg,#e6f2ee 0%,#f6f8f7 55%)}
+.brand{width:52px;height:52px;border-radius:15px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;margin-bottom:16px}
+.login-screen h1{font-size:26px;margin:0 0 6px;letter-spacing:-.4px}
+.login-screen .tagline{color:var(--teal-dark);font-weight:700;font-size:13px;margin-bottom:18px}
+.acc-btn{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);border-radius:13px;padding:12px;margin-bottom:9px;text-align:left;width:100%}
+.acc-btn.selected{border-color:var(--teal);box-shadow:0 0 0 3px rgba(11,110,105,.12)}
+.acc-btn .info{flex:1}
+.acc-btn strong{display:block;font-size:12.5px}
+.acc-btn small{display:block;color:var(--muted);font-size:10.5px;margin-top:2px}
+.acc-btn .role-badge{font-size:9px;font-weight:800;padding:3px 7px;border-radius:6px}
+.acc-btn .role-badge.admin{background:#ede8f2;color:#78619b}
+.acc-btn .role-badge.teacher{background:#e2edf5;color:#39729b}
+.fineprint{font-size:10.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.5}
+
+/* toast */
+.toast{position:absolute;left:16px;right:16px;bottom:78px;background:#12312e;color:#fff;padding:12px 14px;border-radius:12px;font-size:12px;display:flex;gap:9px;align-items:center;box-shadow:0 10px 24px rgba(0,0,0,.25);transform:translateY(120%);transition:transform .25s ease;z-index:10}
+.toast.show{transform:none}
+
+/* config list */
+.config-list{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:12px 0}
+.config-list div{padding:10px 0}
+.config-list span{display:block;font-size:9.5px;color:var(--muted)}
+.config-list strong{display:block;font-size:11.5px;margin-top:3px}
+
+/* group card */
+.group-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.group-head i{width:13px;height:13px;border-radius:50%;flex:none}
+.group-head h3{margin:0;font-size:13px}
+.group-head span{display:block;font-size:10px;color:var(--muted)}
+.group-count{font-size:28px;display:block;margin:4px 0 8px}
+.group-count small{font-size:10.5px;color:var(--muted);font-weight:400}
+.reco-box{background:var(--mint);border:1px solid #cfe5de;border-radius:10px;padding:10px;margin:10px 0;font-size:11px;color:var(--teal-dark)}
+.reco-box strong{display:block;font-size:10.5px;margin-bottom:3px}
+
+/* knowledge graph tree */
+.graph-tree{display:flex;flex-direction:column;align-items:center;padding:10px 0 4px}
+.gnode{border:1px solid #cfe1dc;background:#fff;border-radius:10px;padding:9px 16px;text-align:center;font-size:11px;font-weight:700;box-shadow:0 3px 8px rgba(40,90,80,.08)}
+.gnode small{display:block;font-size:9px;font-weight:400;color:var(--muted);margin-top:1px}
+.gnode.root{background:var(--mint);color:var(--teal)}
+.gconn{width:1px;height:18px;background:#a9cec4}
+
+/* print sheet (hidden until print) */
+.print-sheet{display:none}
+@media print{
+  body *{visibility:hidden}
+  .print-sheet, .print-sheet *{visibility:visible}
+  .print-sheet{display:block;position:absolute;top:0;left:0;width:100%;padding:24px}
+}
+</style>
+</head>
+<body>
+
+<div class="desk-wrap">
+  <div class="desk-note">
+    <strong>Shiksha Setu — Mobile Prototype</strong>
+    This is a standalone, fully clickable HTML prototype (no build step, no server, no dependencies). On a laptop it's shown inside a phone frame. Open this same file directly on a phone browser and it fills the whole screen edge-to-edge.
+    <br><br>
+    Tap anything — every button, tab, search box, and card is interactive.
+  </div>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar">
+        <span id="clock">9:41</span>
+        <span>●●●●&nbsp; Wi-Fi&nbsp; 100%</span>
+      </div>
+
+      <div class="app-scroll" id="scrollArea">
+
+        <!-- ===================== LOGIN ===================== -->
+        <div class="view active" id="view-login">
+          <div class="login-screen">
+            <div class="brand">SS</div>
+            <h1>Shiksha Setu</h1>
+            <div class="tagline">Five-Minute Assessment. Next-Day Teaching Action.</div>
+            <p class="muted" style="margin-bottom:16px">Choose a demo account to explore the app. All data is synthetic.</p>
+
+            <button class="acc-btn selected" data-user="anita" onclick="selectAccount(this,'anita')">
+              <div class="avatar">AS</div>
+              <div class="info"><strong>Anita Sharma</strong><small>teacher.anita</small></div>
+              <span class="role-badge teacher">TEACHER</span>
+            </button>
+            <button class="acc-btn" data-user="rekha" onclick="selectAccount(this,'rekha')">
+              <div class="avatar">RV</div>
+              <div class="info"><strong>Rekha Verma</strong><small>teacher.rekha</small></div>
+              <span class="role-badge teacher">TEACHER</span>
+            </button>
+            <button class="acc-btn" data-user="admin" onclick="selectAccount(this,'admin')">
+              <div class="avatar">AM</div>
+              <div class="info"><strong>Aarav Mehta</strong><small>admin.demo</small></div>
+              <span class="role-badge admin">ADMIN</span>
+            </button>
+
+            <div style="margin-top:14px">
+              <button class="btn primary" onclick="login()">Enter workspace →</button>
+            </div>
+            <p class="fineprint">Prototype authentication only. No external service or student data is used.</p>
+          </div>
+        </div>
+
+        <!-- ===================== TEACHER DASHBOARD ===================== -->
+        <div class="view" id="view-teacher-dashboard">
+          <p class="eyebrow">Teacher workspace · Mon, 5 Sep</p>
+          <h1 class="page-title">Your next best actions</h1>
+          <p class="muted" style="margin-bottom:14px">Three small actions can move learning forward today.</p>
+
+          <div class="notice">
+            <div class="icon">✨</div>
+            <div><b>Tomorrow's groups are ready</b><span>12 learners need a concrete fraction activity after the September pulse.</span></div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat"><strong>30</strong><span>Assigned learners</span></div>
+            <div class="stat"><strong>18</strong><span>Pulse due · Sept</span></div>
+            <div class="stat"><strong>82%</strong><span>Evidence captured</span></div>
+            <div class="stat"><strong>24</strong><span>Parent cards ready</span></div>
+          </div>
+
+          <div class="card">
+            <div class="row between" style="margin-bottom:8px"><strong style="font-size:13px">Class learning signals</strong></div>
+            <div class="list-row"><div class="main"><strong>Grade 6 · A</strong><small>10 learners · 78% evidence</small></div><span class="tag success">On track</span></div>
+            <div class="list-row"><div class="main"><strong>Grade 7 · B</strong><small>12 learners · 69% evidence</small></div><span class="tag warning">Mixed levels</span></div>
+            <div class="list-row"><div class="main"><strong>Grade 8 · A</strong><small>14 learners · 60% evidence</small></div><span class="tag success">On track</span></div>
+          </div>
+
+          <button class="btn primary" style="margin-bottom:8px" onclick="go('view-assessments')">📝&nbsp; Generate Monthly Pulse</button>
+          <button class="btn secondary" style="margin-bottom:8px" onclick="go('view-groups')">👥&nbsp; Open teaching groups</button>
+          <button class="btn ghost" onclick="go('view-parent')">🖨️&nbsp; Print parent cards</button>
+        </div>
+
+        <!-- ===================== ADMIN DASHBOARD ===================== -->
+        <div class="view" id="view-admin-dashboard">
+          <p class="eyebrow">Administration · Today</p>
+          <h1 class="page-title">Good morning, Aarav</h1>
+          <p class="muted" style="margin-bottom:14px">The demo school network is ready for its next learning cycle.</p>
+
+          <div class="notice">
+            <div class="icon">✨</div>
+            <div><b>Demo workspace fully seeded</b><span>All content is synthetic and marked DEMO_NOT_VALIDATED.</span></div>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat"><strong>2</strong><span>Schools</span></div>
+            <div class="stat"><strong>3</strong><span>Teachers</span></div>
+            <div class="stat"><strong>60</strong><span>Students, Grades 6–8</span></div>
+            <div class="stat"><strong>18</strong><span>Assessments this month</span></div>
+          </div>
+
+          <div class="card">
+            <strong style="font-size:13px;display:block;margin-bottom:8px">Needs attention</strong>
+            <div class="list-row"><div class="avatar" style="background:#f4e4d5;color:#b45e2f">KS</div><div class="main"><strong>Kabir Singh 07</strong><small>Mathematics · Foundation</small></div><span class="tag danger">Review</span></div>
+            <div class="list-row"><div class="avatar" style="background:#f4e4d5;color:#b45e2f">ID</div><div class="main"><strong>Ishaan Das 11</strong><small>English · Emerging</small></div><span class="tag danger">Review</span></div>
+          </div>
+
+          <button class="btn primary" style="margin-bottom:8px" onclick="go('view-academic')">📚&nbsp; Academic structure</button>
+          <button class="btn secondary" style="margin-bottom:8px" onclick="go('view-questions')">🗂️&nbsp; Question bank</button>
+          <button class="btn ghost" onclick="go('view-graph')">🕸️&nbsp; Knowledge graph</button>
+        </div>
+
+        <!-- ===================== ASSESSMENTS ===================== -->
+        <div class="view" id="view-assessments">
+          <div class="topbar"><button class="back" onclick="goBack('view-teacher-dashboard')">←</button><div class="title">Monthly Pulse</div><span class="pill" id="pulseStatus">Draft</span></div>
+          <div style="padding:12px 16px 0">
+            <p class="muted" style="margin-bottom:10px">One question per active performance level. Five minutes, printable and explainable.</p>
+
+            <button class="btn primary" style="margin-bottom:12px" onclick="generatePulse()">⚡ Generate pulse</button>
+
+            <div id="pulseNotice" class="notice" style="display:none">
+              <div class="icon">✅</div>
+              <div><b>STD6_MAT_202609_SET01 is ready</b><span>5 questions · 5 minutes · covers L1–L5 · draft status</span></div>
+            </div>
+
+            <div class="card">
+              <div class="row between"><strong style="font-size:13px">Sept 2026 · Grade 6 Mathematics</strong></div>
+              <p class="muted" style="margin:2px 0 0">Hans Vriksh Demo School · Grade 6, Section A</p>
+              <div class="config-list">
+                <div><span>Assessment mode</span><strong>Monthly Pulse</strong></div>
+                <div><span>Level framework</span><strong>Five-Level Recovery</strong></div>
+                <div><span>Question count</span><strong>5 active levels</strong></div>
+                <div><span>Est. duration</span><strong>5 minutes</strong></div>
+              </div>
+              <strong style="font-size:12px;display:block;margin-bottom:4px">Question coverage</strong>
+              <div class="list-row"><div class="level-dot" style="background:#d95c59">L1</div><div class="main"><strong>Foundation</strong><small>Library has 6 shelves, 4 books each — how many books?</small></div><span class="tag success">1 Q</span></div>
+              <div class="list-row"><div class="level-dot" style="background:#d58a32">L2</div><div class="main"><strong>Emerging</strong><small>Identify the next number in a simple pattern</small></div><span class="tag success">1 Q</span></div>
+              <div class="list-row"><div class="level-dot" style="background:#ad9b31">L3</div><div class="main"><strong>Developing</strong><small>Apply the rule to extend a sequence</small></div><span class="tag success">1 Q</span></div>
+              <div class="list-row"><div class="level-dot" style="background:#2b927d">L4</div><div class="main"><strong>Proficient</strong><small>Explain reasoning behind the pattern rule</small></div><span class="tag success">1 Q</span></div>
+              <div class="list-row"><div class="level-dot" style="background:#3777a8">L5</div><div class="main"><strong>Advanced</strong><small>Compare two different patterns and justify</small></div><span class="tag success">1 Q</span></div>
+            </div>
+
+            <div class="reco-box">
+              <strong>Designed for action</strong>
+              Each question maps to one competency and one level. The learner's earliest unmet prerequisite guides the next-day activity — not just a raw score.
+            </div>
+            <button class="btn secondary" onclick="printSheet('student')">🖨️ Print student paper</button>
+          </div>
+        </div>
+
+        <!-- ===================== TEACHING GROUPS ===================== -->
+        <div class="view" id="view-groups">
+          <div class="topbar"><button class="back" onclick="goBack('view-teacher-dashboard')">←</button><div class="title">Teaching Groups</div></div>
+          <div style="padding:12px 16px 0">
+            <p class="muted" style="margin-bottom:10px">Flexible groups built from competency evidence, not a permanent label.</p>
+
+            <div class="card">
+              <div class="group-head"><i style="background:#d95c59"></i><div><h3>Foundation · Fractions</h3><span>Mathematics · September evidence</span></div></div>
+              <strong class="group-count">12 <small>learners</small></strong>
+              <div class="reco-box"><strong>Next-day activity</strong>Concrete fraction strips — physical halves/quarters before symbols.</div>
+              <button class="btn ghost" onclick="toast('Opening resource: Concrete Fraction Strips (20 min activity)')">Open resource →</button>
+            </div>
+            <div class="card">
+              <div class="group-head"><i style="background:#ad9b31"></i><div><h3>Developing · Patterns</h3><span>Mathematics · September evidence</span></div></div>
+              <strong class="group-count">9 <small>learners</small></strong>
+              <div class="reco-box"><strong>Next-day activity</strong>Explain the rule aloud, then extend the pattern one more step.</div>
+              <button class="btn ghost" onclick="toast('Opening resource: Pattern Rule Practice Pack')">Open resource →</button>
+            </div>
+            <div class="card">
+              <div class="group-head"><i style="background:#2b927d"></i><div><h3>Proficient · Reading</h3><span>English · September evidence</span></div></div>
+              <strong class="group-count">14 <small>learners</small></strong>
+              <div class="reco-box"><strong>Next-day activity</strong>Inference challenge cards using short original passages.</div>
+              <button class="btn ghost" onclick="toast('Opening resource: Inference Challenge Cards')">Open resource →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== PARENT PROGRESS ===================== -->
+        <div class="view" id="view-parent">
+          <div class="topbar"><button class="back" onclick="goBack('view-teacher-dashboard')">←</button><div class="title">Parent Progress Cards</div></div>
+          <div style="padding:12px 16px 0">
+            <div class="notice"><div class="icon">🛡️</div><div><b>Simple by design</b><span>Focus area + one home practice suggestion. No diagnostic labels printed.</span></div></div>
+            <div class="card">
+              <div class="list-row"><div class="avatar" style="background:#f4e4d5;color:#b45e2f">AR</div><div class="main"><strong>Aditi Rao 01</strong><small>Grade 6 · Mathematics</small></div><span class="tag success">Ready</span></div>
+              <div class="list-row"><div class="avatar" style="background:#f4e4d5;color:#b45e2f">KS</div><div class="main"><strong>Kabir Singh 02</strong><small>Grade 6 · English</small></div><span class="tag success">Ready</span></div>
+              <div class="list-row"><div class="avatar" style="background:#f4e4d5;color:#b45e2f">MJ</div><div class="main"><strong>Meera Joshi 03</strong><small>Grade 7 · Hindi</small></div><span class="tag success">Ready</span></div>
+              <div class="list-row"><div class="avatar" style="background:#f4e4d5;color:#b45e2f">ID</div><div class="main"><strong>Ishaan Das 04</strong><small>Grade 7 · Science</small></div><span class="tag success">Ready</span></div>
+            </div>
+            <button class="btn primary" onclick="printSheet('parent')">🖨️ Print selected cards</button>
+          </div>
+        </div>
+
+        <!-- ===================== ADMIN: ACADEMIC STRUCTURE ===================== -->
+        <div class="view" id="view-academic">
+          <div class="topbar"><button class="back" onclick="goBack('view-admin-dashboard')">←</button><div class="title">Academic Structure</div></div>
+          <div style="padding:12px 16px 0">
+            <div class="tabs" id="academicTabs">
+              <button class="tab active" onclick="setAcademicTab(this,'standards')">Standards</button>
+              <button class="tab" onclick="setAcademicTab(this,'subjects')">Subjects</button>
+              <button class="tab" onclick="setAcademicTab(this,'levels')">Level frameworks</button>
+              <button class="tab" onclick="setAcademicTab(this,'competencies')">Competencies</button>
+            </div>
+
+            <div id="academic-standards" class="academic-pane">
+              <div class="card" style="padding:6px 14px">
+                <div class="list-row"><div class="main"><strong>Grade 5</strong><small>Configured for future use</small></div><span class="tag">Inactive</span></div>
+                <div class="list-row"><div class="main"><strong>Grade 6</strong><small>Upper Primary / Middle Stage</small></div><span class="tag success">Active</span></div>
+                <div class="list-row"><div class="main"><strong>Grade 7</strong><small>Upper Primary / Middle Stage</small></div><span class="tag success">Active</span></div>
+                <div class="list-row"><div class="main"><strong>Grade 8</strong><small>Upper Primary / Middle Stage</small></div><span class="tag success">Active</span></div>
+                <div class="list-row"><div class="main"><strong>Grade 9</strong><small>Secondary Stage</small></div><span class="tag success">Active</span></div>
+                <div class="list-row"><div class="main"><strong>Grade 10</strong><small>Secondary Stage</small></div><span class="tag success">Active</span></div>
+                <div class="list-row"><div class="main"><strong>Grade 11</strong><small>Higher Secondary Stage</small></div><span class="tag success">Active</span></div>
+                <div class="list-row"><div class="main"><strong>Grade 12</strong><small>Higher Secondary Stage</small></div><span class="tag success">Active</span></div>
+                <div class="list-row"><div class="main"><strong>Bridge Course A</strong><small>Configured for future use</small></div><span class="tag">Inactive</span></div>
+              </div>
+            </div>
+
+            <div id="academic-subjects" class="academic-pane" style="display:none">
+              <div class="card" style="padding:6px 14px">
+                <div class="list-row"><div class="main"><strong>Mathematics</strong><small>MAT · mapped to 7 standards</small></div><span class="chev">›</span></div>
+                <div class="list-row"><div class="main"><strong>English</strong><small>ENG · mapped to 7 standards</small></div><span class="chev">›</span></div>
+                <div class="list-row"><div class="main"><strong>Hindi</strong><small>HIN · mapped to 5 standards</small></div><span class="chev">›</span></div>
+                <div class="list-row"><div class="main"><strong>General Science</strong><small>SCI · mapped to 5 standards</small></div><span class="chev">›</span></div>
+                <div class="list-row"><div class="main"><strong>Social Science</strong><small>SOC · mapped to 5 standards</small></div><span class="chev">›</span></div>
+                <div class="list-row"><div class="main"><strong>Life Skills</strong><small>LIF · mapped to 7 standards</small></div><span class="chev">›</span></div>
+                <div class="list-row"><div class="main"><strong>Physics</strong><small>PHY · mapped to 2 standards</small></div><span class="chev">›</span></div>
+                <div class="list-row"><div class="main"><strong>Chemistry</strong><small>CHE · mapped to 2 standards</small></div><span class="chev">›</span></div>
+              </div>
+            </div>
+
+            <div id="academic-levels" class="academic-pane" style="display:none">
+              <div class="card">
+                <div class="row between" style="margin-bottom:8px"><span class="tag success">ACTIVE</span><span class="tag">v1</span></div>
+                <strong style="font-size:13px;display:block;margin-bottom:2px">Five-Level Learning Recovery Framework</strong>
+                <p class="muted" style="margin-bottom:8px">Dynamic thresholds used by assessment generation.</p>
+                <div class="list-row"><div class="level-dot" style="background:#d95c59">●</div><div class="main"><strong>L1 Foundation</strong><small>Mastery threshold 40%</small></div></div>
+                <div class="list-row"><div class="level-dot" style="background:#d58a32">◐</div><div class="main"><strong>L2 Emerging</strong><small>Mastery threshold 50%</small></div></div>
+                <div class="list-row"><div class="level-dot" style="background:#ad9b31">◒</div><div class="main"><strong>L3 Developing</strong><small>Mastery threshold 60%</small></div></div>
+                <div class="list-row"><div class="level-dot" style="background:#2b927d">●</div><div class="main"><strong>L4 Proficient</strong><small>Mastery threshold 70%</small></div></div>
+                <div class="list-row"><div class="level-dot" style="background:#3777a8">★</div><div class="main"><strong>L5 Advanced</strong><small>Mastery threshold 80%</small></div></div>
+              </div>
+              <div class="card">
+                <span class="tag">DRAFT · v1</span>
+                <strong style="font-size:13px;display:block;margin:4px 0 2px">Six-Level Extended Framework</strong>
+                <p class="muted">Includes L0 Pre-Foundation for early-stage learners.</p>
+              </div>
+            </div>
+
+            <div id="academic-competencies" class="academic-pane" style="display:none">
+              <div class="search"><span>🔎</span><input placeholder="Search competencies..." oninput="filterList(this,'compList')"></div>
+              <div class="card" style="padding:6px 14px" id="compList">
+                <div class="list-row" data-search="whole numbers place value grade 6 mathematics"><div class="main"><strong>Whole numbers and place value</strong><small>Grade 6 · Mathematics · Number System</small></div><span class="tag">L1</span></div>
+                <div class="list-row" data-search="fractions daily decisions grade 6"><div class="main"><strong>Fractions in daily decisions</strong><small>Grade 6 · Mathematics · Number System</small></div><span class="tag">L2</span></div>
+                <div class="list-row" data-search="patterns expressions grade 7 algebra"><div class="main"><strong>Patterns and expressions</strong><small>Grade 7 · Mathematics · Algebra</small></div><span class="tag">L3</span></div>
+                <div class="list-row" data-search="angles measurement geometry grade 7"><div class="main"><strong>Angles and measurement</strong><small>Grade 7 · Mathematics · Geometry</small></div><span class="tag">L2</span></div>
+                <div class="list-row" data-search="data interpretation grade 8"><div class="main"><strong>Data interpretation</strong><small>Grade 8 · Mathematics · Data Handling</small></div><span class="tag">L4</span></div>
+                <div class="list-row" data-search="reading comprehension english grade 6"><div class="main"><strong>Reading comprehension</strong><small>Grade 6 · English · Reading and Language</small></div><span class="tag">L2</span></div>
+              </div>
+              <p class="muted" style="text-align:center;margin-top:6px">150 competencies seeded in the full app · showing 6</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== ADMIN: QUESTION BANK ===================== -->
+        <div class="view" id="view-questions">
+          <div class="topbar"><button class="back" onclick="goBack('view-admin-dashboard')">←</button><div class="title">Question Bank</div></div>
+          <div style="padding:12px 16px 0">
+            <div class="notice"><div class="icon">📚</div><div><b>360 original items</b><span>All synthetic, marked DEMO_NOT_VALIDATED for expert review.</span></div></div>
+            <div class="search"><span>🔎</span><input placeholder="Search question text..." oninput="filterList(this,'qList')"></div>
+            <div class="card" style="padding:6px 14px" id="qList">
+              <div class="list-row" data-search="library shelves storybooks mathematics"><div class="main"><strong>A library has 6 shelves with 4 storybooks each. How many storybooks?</strong><small>MAT · L1 Foundation · q-1</small></div><span class="tag success">Print ready</span></div>
+              <div class="list-row" data-search="sequence pattern rule mathematics"><div class="main"><strong>A sequence begins 3, 6, 9, 12. Describe the rule.</strong><small>MAT · L3 Developing · q-2</small></div><span class="tag success">Print ready</span></div>
+              <div class="list-row" data-search="passage main idea english reading"><div class="main"><strong>Read the passage and identify the main idea.</strong><small>ENG · L2 Emerging · q-41</small></div><span class="tag success">Print ready</span></div>
+              <div class="list-row" data-search="paryayvachi hindi vocabulary"><div class="main"><strong>दिए गए शब्द का पर्यायवाची लिखिए।</strong><small>HIN · L2 Emerging · q-88</small></div><span class="tag success">Print ready</span></div>
+              <div class="list-row" data-search="force pressure science observation"><div class="main"><strong>Explain why a sharp knife cuts more easily than a blunt one.</strong><small>SCI · L4 Proficient · q-152</small></div><span class="tag success">Print ready</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== ADMIN: KNOWLEDGE GRAPH ===================== -->
+        <div class="view" id="view-graph">
+          <div class="topbar"><button class="back" onclick="goBack('view-admin-dashboard')">←</button><div class="title">Knowledge Graph</div></div>
+          <div style="padding:12px 16px 0">
+            <p class="muted" style="margin-bottom:6px">Tap a node to see its connections.</p>
+            <div class="card">
+              <div class="graph-tree">
+                <div class="gnode root" onclick="toast('AY2026_27 · Active academic year')">AY2026_27<small>Academic Year</small></div>
+                <div class="gconn"></div>
+                <div class="gnode" onclick="toast('Grade 6 · 8 class sections · Upper Primary stage')">Grade 6<small>Standard</small></div>
+                <div class="gconn"></div>
+                <div class="gnode" onclick="toast('Mathematics · 12 subjects in catalogue')">Mathematics<small>Subject</small></div>
+                <div class="gconn"></div>
+                <div class="gnode" onclick="toast('Number System · contains 4 topics')">Number System<small>Domain</small></div>
+                <div class="gconn"></div>
+                <div class="gnode" onclick="showCompetencyDetail()" style="background:var(--mint);color:var(--teal)">Whole numbers & place value<small>Competency</small></div>
+              </div>
+            </div>
+            <div class="card" id="compDetail" style="display:none">
+              <strong style="font-size:13px;display:block;margin-bottom:6px">Whole numbers and place value</strong>
+              <p class="muted" style="margin-bottom:10px">Learner explains and applies whole number place value in a familiar context.</p>
+              <div style="border-top:1px solid var(--line);padding:8px 0">
+                <strong style="font-size:10.5px;color:var(--teal);text-transform:uppercase">Prerequisites</strong>
+                <p class="muted">Counting in equal groups · L1 Foundation</p>
+              </div>
+              <div style="border-top:1px solid var(--line);padding:8px 0">
+                <strong style="font-size:10.5px;color:var(--teal);text-transform:uppercase">Evidence</strong>
+                <p class="muted">42 learners assessed · 68% proficient · Sept 2026</p>
+              </div>
+              <div style="border-top:1px solid var(--line);padding:8px 0">
+                <strong style="font-size:10.5px;color:var(--teal);text-transform:uppercase">Resources</strong>
+                <p class="muted">Concrete grouping activity (20 min) · Practice pack (3 items)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /app-scroll -->
+
+      <!-- ===================== BOTTOM TAB BAR ===================== -->
+      <div class="tabbar" id="teacherTabbar" style="display:none">
+        <button class="active" data-target="view-teacher-dashboard" onclick="tabbarGo(this,'view-teacher-dashboard')"><span>🏠</span>Home</button>
+        <button data-target="view-assessments" onclick="tabbarGo(this,'view-assessments')"><span>📝</span>Assess</button>
+        <button data-target="view-groups" onclick="tabbarGo(this,'view-groups')"><span>👥</span>Groups</button>
+        <button data-target="view-parent" onclick="tabbarGo(this,'view-parent')"><span>🖨️</span>Parents</button>
+        <button onclick="logout()"><span>🚪</span>Sign out</button>
+      </div>
+      <div class="tabbar" id="adminTabbar" style="display:none">
+        <button class="active" data-target="view-admin-dashboard" onclick="tabbarGo(this,'view-admin-dashboard')"><span>🏠</span>Home</button>
+        <button data-target="view-academic" onclick="tabbarGo(this,'view-academic')"><span>📚</span>Academic</button>
+        <button data-target="view-questions" onclick="tabbarGo(this,'view-questions')"><span>🗂️</span>Questions</button>
+        <button data-target="view-graph" onclick="tabbarGo(this,'view-graph')"><span>🕸️</span>Graph</button>
+        <button onclick="logout()"><span>🚪</span>Sign out</button>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PRINT SHEETS (invisible on screen, only shown to the printer) ===================== -->
+<div class="print-sheet" id="printSheetArea"></div>
+
+<script>
+var currentUser = 'anita';
+var navStack = ['view-login'];
+
+function selectAccount(el, user){
+  document.querySelectorAll('.acc-btn').forEach(function(b){ b.classList.remove('selected'); });
+  el.classList.add('selected');
+  currentUser = user;
+}
+
+function login(){
+  var role = currentUser === 'admin' ? 'admin' : 'teacher';
+  document.getElementById('teacherTabbar').style.display = role === 'teacher' ? 'flex' : 'none';
+  document.getElementById('adminTabbar').style.display = role === 'admin' ? 'flex' : 'none';
+  go(role === 'admin' ? 'view-admin-dashboard' : 'view-teacher-dashboard', true);
+  toast('Welcome, ' + (currentUser === 'admin' ? 'Aarav Mehta' : currentUser === 'rekha' ? 'Rekha Verma' : 'Anita Sharma'));
+}
+
+function logout(){
+  document.getElementById('teacherTabbar').style.display = 'none';
+  document.getElementById('adminTabbar').style.display = 'none';
+  navStack = ['view-login'];
+  go('view-login', true);
+}
+
+function go(id, reset){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  document.getElementById('scrollArea').scrollTop = 0;
+  if(reset){ navStack = [id]; } else { navStack.push(id); }
+  syncTabbar(id);
+}
+
+function goBack(fallbackId){
+  navStack.pop();
+  var prev = navStack[navStack.length - 1] || fallbackId;
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById(prev).classList.add('active');
+  document.getElementById('scrollArea').scrollTop = 0;
+  syncTabbar(prev);
+}
+
+function tabbarGo(el, id){
+  var bar = el.closest('.tabbar');
+  bar.querySelectorAll('button').forEach(function(b){ b.classList.remove('active'); });
+  el.classList.add('active');
+  go(id, true);
+}
+
+function syncTabbar(id){
+  ['teacherTabbar','adminTabbar'].forEach(function(barId){
+    var bar = document.getElementById(barId);
+    if(bar.style.display === 'none') return;
+    bar.querySelectorAll('button').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-target') === id);
+    });
+  });
+}
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+function generatePulse(){
+  document.getElementById('pulseNotice').style.display = 'flex';
+  document.getElementById('pulseStatus').textContent = 'Generated';
+  toast('STD6_MAT_202609_SET01 generated — 5 questions, one per active level');
+}
+
+function setAcademicTab(el, key){
+  document.querySelectorAll('#academicTabs .tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  document.querySelectorAll('.academic-pane').forEach(function(p){ p.style.display = 'none'; });
+  document.getElementById('academic-' + key).style.display = 'block';
+}
+
+function filterList(input, listId){
+  var q = input.value.trim().toLowerCase();
+  var rows = document.getElementById(listId).querySelectorAll('.list-row');
+  rows.forEach(function(r){
+    var hay = (r.getAttribute('data-search') || r.textContent).toLowerCase();
+    r.style.display = hay.indexOf(q) > -1 ? 'flex' : 'none';
+  });
+}
+
+function showCompetencyDetail(){
+  document.getElementById('compDetail').style.display = 'block';
+  toast('Whole numbers and place value — details loaded');
+}
+
+function printSheet(type){
+  var area = document.getElementById('printSheetArea');
+  if(type === 'student'){
+    area.innerHTML =
+      '<h2 style="margin-bottom:2px">Hans Vriksh Demo School</h2>' +
+      '<p style="margin:0 0 14px;color:#555">Grade 6, Section A · Mathematics · September 2026 · Set STD6_MAT_202609_SET01</p>' +
+      '<p><strong>Student name:</strong> _______________________ &nbsp;&nbsp; <strong>Date:</strong> ___________</p>' +
+      '<hr>' +
+      '<ol style="line-height:2.1;font-size:15px">' +
+      '<li>A library has 6 shelves with 4 storybooks on each shelf. How many storybooks are there?</li>' +
+      '<li>A sequence begins 3, 6, 9, 12. What number comes next?</li>' +
+      '<li>Continue the pattern and explain the rule you used: 5, 10, 15, ___</li>' +
+      '<li>Explain, in your own words, how you would check your answer to question 3.</li>' +
+      '<li>Compare two number patterns given by your teacher and explain which grows faster.</li>' +
+      '</ol>' +
+      '<p style="margin-top:20px;color:#777;font-size:12px">Total marks: 5 · Estimated duration: 5 minutes</p>';
+  } else {
+    area.innerHTML =
+      '<h2 style="margin-bottom:2px">Progress Card — September 2026</h2>' +
+      '<p style="margin:0 0 14px;color:#555">Hans Vriksh Demo School</p>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:14px">' +
+      '<tr><td style="padding:6px 0"><strong>Aditi Rao 01</strong> — Grade 6</td><td>Focus: Mathematics · Home practice: count change while shopping</td></tr>' +
+      '<tr><td style="padding:6px 0"><strong>Kabir Singh 02</strong> — Grade 6</td><td>Focus: English · Home practice: read one short story aloud</td></tr>' +
+      '<tr><td style="padding:6px 0"><strong>Meera Joshi 03</strong> — Grade 7</td><td>Focus: Hindi · Home practice: लिखें पाँच नए शब्द</td></tr>' +
+      '<tr><td style="padding:6px 0"><strong>Ishaan Das 04</strong> — Grade 7</td><td>Focus: Science · Home practice: observe and note one daily force</td></tr>' +
+      '</table>';
+  }
+  window.print();
+}
+
+// live clock in the mock status bar
+function tickClock(){
+  var d = new Date();
+  var h = d.getHours() % 12; if(h === 0) h = 12;
+  var m = d.getMinutes();
+  document.getElementById('clock').textContent = h + ':' + (m < 10 ? '0' + m : m);
+}
+tickClock();
+setInterval(tickClock, 30000);
+</script>
+</body>
+</html>

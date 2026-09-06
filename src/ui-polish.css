@@ -618,3 +618,57 @@ select{text-overflow:ellipsis}
   .page-header h1{font-size:25px}
   .kg-stat-item{flex:1 1 100%}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Parent Cards list (.student-row inside .list-panel).
+   `.student-row` is declared as `padding:14px 0` — no horizontal padding —
+   which is fine on the dashboard where its parent `.panel` supplies 22px,
+   but on the Parent Cards page the parent is `.list-panel{padding:0}`, so
+   the avatar and the Preview Card button sat 1px from the panel border.
+   The sibling list rows (.master-row/.question-row/.school-row) already get
+   `padding:0 18px`; .student-row was simply missed. Scoped to .list-panel so
+   the dashboard copy does not end up double-padded.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.list-panel .student-row{
+  padding-left:18px;
+  padding-right:18px;
+  gap:14px;
+}
+
+/* The first row's border-top landed directly on the panel's own border,
+   drawing two rules of slightly different grey a pixel apart. */
+.list-panel .student-row:first-child{border-top:0}
+
+/* The name/parent block is `flex:1` with the default min-width:auto, so a
+   long parent line pushed the pill and button past the panel edge at
+   mid-range widths. */
+.student-row>div:nth-child(2){min-width:0}
+.student-row strong,.student-row small{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.student-row .trend-pill,.student-row .link-button{flex:0 0 auto}
+
+@media(max-width:700px){
+  /* Two lines on a phone, with the avatar spanning both: identity on top,
+     signal and action beneath it. Grid rather than flex-wrap, which put the
+     avatar on a line of its own and made every row three lines tall. */
+  .list-panel .student-row{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    grid-template-areas:
+      "avatar info   info"
+      "avatar signal action";
+    align-items:center;
+    column-gap:12px;
+    row-gap:8px;
+    padding:14px;
+  }
+  .student-row .avatar{grid-area:avatar;align-self:start}
+  .student-row>div:nth-child(2){grid-area:info;min-width:0}
+  .student-row .trend-pill{grid-area:signal;justify-self:start}
+  .student-row .link-button{grid-area:action;justify-self:end}
+  .student-row strong,.student-row small{white-space:normal}
+}

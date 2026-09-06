@@ -27,21 +27,6 @@ import { SavedQuestionSets } from './saved-question-sets';
 
 registerSW({ immediate: true });
 
-function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  useEffect(() => {
-    const goOnline = () => setIsOnline(true);
-    const goOffline = () => setIsOnline(false);
-    window.addEventListener('online', goOnline);
-    window.addEventListener('offline', goOffline);
-    return () => {
-      window.removeEventListener('online', goOnline);
-      window.removeEventListener('offline', goOffline);
-    };
-  }, []);
-  return isOnline;
-}
-
 const navAdmin = [
   { label: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Academic structure', path: '/admin/standards', icon: BookOpen },
@@ -188,7 +173,6 @@ function AppShell({
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isOnline = useOnlineStatus();
   const graph = React.useMemo(() => buildEducationGraph(data), [data]);
   const nav = user.role === 'ADMIN' ? navAdmin : navTeacher;
 
@@ -234,11 +218,6 @@ function AppShell({
         </nav>
 
         <div className="sidebar-bottom">
-          <div className="offline-chip">
-            <span className={isOnline ? 'status-dot' : 'status-dot offline'} />
-            {isOnline ? 'Online · Offline ready' : 'Offline · Using local storage'}
-            <span className="sync-count">{data.stats.sync}</span>
-          </div>
           {user.role === 'ADMIN' && (
             <button className="text-button" onClick={onReset}>
               <RefreshCw size={14} /> Reset Demo Data

@@ -259,10 +259,6 @@ function AppShell({
             Workspace <span>/</span> {user.role === 'ADMIN' ? 'Administration' : 'Teacher View'} <span>/</span> <strong>{user.name}</strong>
           </div>
           <div className="top-actions">
-            <span className="online">
-              <span className={isOnline ? 'status-dot' : 'status-dot offline'} />
-              {isOnline ? 'Local Data Synced' : 'Offline Mode'}
-            </span>
             <div className="avatar">{user.name.split(' ').map(p => p[0]).join('')}</div>
             <span className="user-name">{user.name} ({user.role})</span>
           </div>

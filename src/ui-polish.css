@@ -275,3 +275,156 @@ select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
 @media print{
   .panel,.stat-card,.mini-stat,.wizard-card,.worksheet-card{box-shadow:none}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Form controls — selects, inputs and textareas, themed as one family.
+   The browser was drawing its own OS chevron on every <select>; these rules
+   replace it with a brand chevron and give all controls the same border,
+   hover glow and focus ring as the buttons.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+select,
+.form-group select,
+.month-selector-inline select,
+.filter-item select,
+.login-card select,
+.list-toolbar select{
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  appearance:none;
+  font-family:var(--font);
+  font-size:13px;
+  font-weight:600;
+  color:var(--ink);
+  padding:10px 34px 10px 12px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background-color:#fff;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' stroke='%236d7c7c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  background-size:11px 8px;
+  cursor:pointer;
+  outline:none;
+  box-shadow:var(--elev-1);
+  transition:border-color .16s var(--ease),box-shadow .16s var(--ease),
+             background-color .16s var(--ease);
+}
+
+/* Teal chevron once the control is engaged. */
+select:hover,
+.form-group select:hover,
+.month-selector-inline select:hover,
+.filter-item select:hover,
+.login-card select:hover,
+select:focus,
+.form-group select:focus,
+.month-selector-inline select:focus,
+.filter-item select:focus,
+.login-card select:focus{
+  border-color:var(--teal);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' stroke='%230b6e69' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+select:hover{box-shadow:var(--glow-soft)}
+select:focus,.form-group select:focus,.login-card select:focus{box-shadow:var(--glow-soft)}
+
+/* A sized or multiple select is a list box, not a dropdown — no chevron. */
+select[multiple],select[size]:not([size="1"]){
+  background-image:none;
+  padding-right:12px;
+  cursor:default;
+}
+
+/* Text entry — same border language as the selects. */
+input[type="text"],input[type="number"],input[type="tel"],
+input[type="email"],input[type="password"],input[type="search"],
+input[type="date"],input[type="month"],input:not([type]),textarea,
+.form-group input,.form-group textarea,
+.login-card input{
+  font-family:var(--font);
+  font-size:13px;
+  color:var(--ink);
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background-color:#fff;
+  outline:none;
+  transition:border-color .16s var(--ease),box-shadow .16s var(--ease);
+}
+input[type="text"]:hover,input[type="number"]:hover,input[type="tel"]:hover,
+input[type="email"]:hover,input[type="search"]:hover,textarea:hover,
+.form-group input:hover,.form-group textarea:hover{
+  border-color:#bcd2cc;
+}
+input:focus,textarea:focus,
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus,
+.login-card input:focus{
+  border-color:var(--teal);
+  box-shadow:0 0 0 3px rgba(11,110,105,.13);
+}
+textarea{resize:vertical;min-height:80px;line-height:1.55}
+::placeholder{color:#9aa8a5;opacity:1}
+
+/* Inputs that sit inside their own bordered shell stay borderless. */
+.search input,.input-with-icon input{
+  border:0;
+  border-radius:0;
+  padding:10px 0;
+  background:transparent;
+  box-shadow:none;
+}
+.search input:focus,.input-with-icon input:focus{border:0;box-shadow:none}
+.input-with-icon:hover,.search:hover{border-color:#bcd2cc}
+
+input[type="file"],input[type="checkbox"],input[type="radio"]{
+  box-shadow:none;
+}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--teal);cursor:pointer}
+
+select:disabled,input:disabled,textarea:disabled{
+  background-color:#f4f7f6;
+  color:#9aa8a5;
+  cursor:not-allowed;
+  box-shadow:none;
+  border-color:#e8eeec;
+}
+
+/* ── Filter rows ───────────────────────────────────────────────────────────
+   .filter-group-row / .filter-item are used in the saved-sets, questions and
+   student-register toolbars but had no styling at all, so the label and its
+   control stacked awkwardly. */
+.filter-group-row{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.filter-item{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.filter-item label{
+  font-size:12px;
+  font-weight:600;
+  color:#536261;
+  white-space:nowrap;
+}
+.filter-item select{
+  font-size:12px;
+  padding:8px 30px 8px 10px;
+  background-position:right 10px center;
+}
+.month-selector-inline select{
+  font-size:12px;
+  padding:7px 28px 7px 10px;
+  color:var(--teal);
+  font-weight:700;
+  background-position:right 9px center;
+}
+
+@media (max-width:700px){
+  .filter-group-row{gap:12px}
+  .filter-item{width:100%}
+  .filter-item select{flex:1}
+}

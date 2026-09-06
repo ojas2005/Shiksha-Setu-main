@@ -428,3 +428,193 @@ select:disabled,input:disabled,textarea:disabled{
   .filter-item{width:100%}
   .filter-item select{flex:1}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Responsive layout.
+   The app shell (sidebar drawer, topbar, stat grid, login) was already
+   handled in styles.css at 1050px/700px. What follows collapses the content
+   grids in extra.css, which held their desktop column counts at every width
+   and pushed the page into horizontal scroll on a phone.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+html{-webkit-text-size-adjust:100%}
+
+/* Rows of chips/tabs scroll sideways instead of forcing the page to. */
+.tabs,.stepper,.subject-tabs-row,.study-modal-tabs,
+.subject-pills-row,.classrooms-ribbon,.level-switch-ribbon{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+.tabs::-webkit-scrollbar,.stepper::-webkit-scrollbar,
+.subject-tabs-row::-webkit-scrollbar,.study-modal-tabs::-webkit-scrollbar,
+.classrooms-ribbon::-webkit-scrollbar{height:4px}
+.tabs::-webkit-scrollbar-thumb,.stepper::-webkit-scrollbar-thumb,
+.subject-tabs-row::-webkit-scrollbar-thumb,.study-modal-tabs::-webkit-scrollbar-thumb,
+.classrooms-ribbon::-webkit-scrollbar-thumb{background:#cfdcd8;border-radius:4px}
+.tabs>*,.stepper>*,.subject-tabs-row>*,.study-modal-tabs>*,
+.subject-pills-row>*,.classrooms-ribbon>*{flex:0 0 auto}
+
+/* A flex/grid child defaults to min-width:auto, so its content can still
+   force the page wider even with overflow-x set. These need min-width:0
+   for the scroll container to actually take effect. */
+.tabs,.stepper,.subject-tabs-row,.study-modal-tabs,
+.subject-pills-row,.classrooms-ribbon,.level-switch-ribbon,
+.assessment-wizard,.main-area,.page-content,
+.panel,.wizard-card,.list-panel,.modal-content,
+.students-table-container{min-width:0}
+
+/* A `1fr` track has a min-content floor, so one long unbreakable string (a
+   generated set identifier, a <select> whose longest option is wide) widens
+   the track past its container. minmax(0,1fr) removes that floor. */
+.form-grid,.subject-grid,.competency-grid,.class-grid,.group-grid,
+.saved-sets-grid,.level-groups-grid,.progress-domains-grid,
+.learning-groups-row,.profiles-grid,.concrete-grid,.q-options-grid,
+.instructions-grid,.form-row-2,.config-list,.history-grid,
+.graph-layout,.assessment-layout,.dashboard-grid,.stat-grid,
+.grades-select-grid,.q-row-item{grid-auto-columns:minmax(0,1fr)}
+.form-group,.form-group>*{min-width:0}
+
+/* A <select> sizes itself to its longest option unless told otherwise. */
+.form-group select,.form-group input,.form-group textarea,
+.filter-item select{width:100%;min-width:0;max-width:100%}
+/* Constrained to their track, long option labels need to trail off cleanly
+   rather than being hard-clipped mid-glyph. */
+select{text-overflow:ellipsis}
+
+/* Long generated identifiers wrap instead of pushing the card wider. */
+.set-name-preview-box,.prompt-code,.flag-code,.q-text,.script-text{
+  overflow-wrap:anywhere;
+  min-width:0;
+}
+
+/* ── Tablet ──────────────────────────────────────────────────────────────── */
+@media(max-width:1050px){
+  .form-grid,
+  .subject-grid,.competency-grid,
+  .class-grid,.group-grid,
+  .saved-sets-grid,
+  .level-groups-grid,
+  .progress-domains-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+  .graph-layout,
+  .assessment-layout,
+  .history-grid{grid-template-columns:minmax(0,1fr)}
+
+  .learning-groups-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .graph-branches{gap:28px}
+  .session-detail-panel{position:static}
+}
+
+/* ── Phone ───────────────────────────────────────────────────────────────── */
+@media(max-width:700px){
+  /* Every content grid becomes a single column. */
+  .form-grid,
+  .subject-grid,.competency-grid,
+  .class-grid,.group-grid,
+  .saved-sets-grid,
+  .level-groups-grid,
+  .progress-domains-grid,
+  .learning-groups-row,
+  .profiles-grid,
+  .concrete-grid,
+  .q-options-grid,
+  .instructions-grid,
+  .form-row-2,
+  .config-list,
+  .history-grid,
+  .graph-layout,
+  .assessment-layout{grid-template-columns:minmax(0,1fr)}
+
+  .form-group.wide{grid-column:auto}
+  .grades-select-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .class-meta{grid-template-columns:auto 1fr;font-size:17px}
+  .empty-state-box{grid-column:auto;padding:28px 16px}
+
+  /* Flex rows that were assuming desktop width. */
+  .kg-stats-row,
+  .external-ai-links,
+  .badge-group,
+  .table-actions,
+  .card-actions,.card-actions-row,
+  .action-buttons-row,
+  .preview-modal-actions-row,
+  .set-card-header,
+  .hero-top,
+  .framework-head,
+  .panel-heading,
+  .study-modal-footer,
+  .list-toolbar,
+  .group-tile-top,
+  .comp-node-header,
+  .domain-node-header{flex-wrap:wrap;gap:10px}
+
+  .kg-stats-row{gap:12px;padding:12px 14px}
+  .kg-stat-item{flex:1 1 40%}
+  .graph-branches{flex-direction:column;align-items:center;gap:18px}
+  .side-node{margin-top:20px}
+
+  /* The notice banner stacked its text into a narrow column because the
+     action button refused to wrap below it. */
+  .notice,.sync-banner{flex-wrap:wrap}
+  .notice div,.sync-banner div{flex:1 1 100%}
+  .notice .secondary,.notice button,
+  .sync-banner .secondary,.sync-banner button{width:100%;justify-content:center}
+
+  /* Action rows put full-width buttons on their own line. */
+  .card-actions,.modal-actions,.study-modal-footer{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .card-actions>*,.modal-actions>*,.study-modal-footer>*{width:100%}
+  .card-actions .primary,.card-actions .secondary,
+  .modal-actions .primary,.modal-actions .secondary{justify-content:center}
+
+  /* Modals fill the screen rather than floating in a cramped box. */
+  .modal-overlay{padding:12px}
+  .modal-content,.modal-content.large,
+  .study-material-dialog,.student-progress-modal{
+    max-width:100%;
+    padding:18px;
+    max-height:calc(100vh - 24px);
+    overflow-y:auto;
+  }
+  .study-modal-header{flex-wrap:wrap;gap:10px}
+
+  /* Tables scroll inside their own container, never the page. */
+  .students-table-container,.list-panel{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .custom-data-table{min-width:560px}
+
+  /* Comfortable touch targets. */
+  .nav-item{min-height:44px}
+  .primary,.secondary,.tab-btn{min-height:44px}
+  .icon-btn-action,.icon-button{min-width:36px;min-height:36px}
+
+  /* iOS Safari zooms the page in when a focused field is under 16px. */
+  input,select,textarea,
+  .form-group input,.form-group select,.form-group textarea,
+  .filter-item select,.search input,.input-with-icon input{font-size:16px}
+
+  /* The search field takes its own full-width line above the filters. */
+  .search{flex:1 1 100%;max-width:100%}
+  .list-toolbar>*{flex:1 1 100%}
+  .filter-group-row{flex-direction:column;align-items:stretch}
+  .filter-item{justify-content:space-between}
+  .page-header h1{font-size:28px}
+  .login-art h1{font-size:38px}
+  .group-count{font-size:30px}
+  .question-list-scrollable{max-height:none}
+
+  /* The bar chart keeps its bar widths and scrolls rather than squashing. */
+  .bars{gap:10px;padding:0 8px;overflow-x:auto;min-width:0;-webkit-overflow-scrolling:touch}
+  .bar-col{flex:0 0 auto}
+}
+
+/* ── Small phone ─────────────────────────────────────────────────────────── */
+@media(max-width:420px){
+  .stat-grid{grid-template-columns:minmax(0,1fr)}
+  .grades-select-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .page-content{padding:20px 14px}
+  .page-header h1{font-size:25px}
+  .kg-stat-item{flex:1 1 100%}
+}

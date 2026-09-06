@@ -1,0 +1,277 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   UI Polish — typography tuning, elevation, hover & glow interactions.
+   Loaded last so it refines the base rules in styles.css / extra.css.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* Inter is declared as --font in styles.css; mono is reserved for
+     pre-formatted blocks where proportional spacing would break alignment. */
+  --font-mono:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
+
+  --elev-1:0 1px 2px rgba(24,57,55,.05), 0 2px 8px rgba(24,57,55,.045);
+  --elev-2:0 2px 5px rgba(24,57,55,.06), 0 10px 24px rgba(24,57,55,.09);
+  --elev-3:0 8px 18px rgba(24,57,55,.10), 0 24px 55px rgba(24,57,55,.14);
+
+  --glow-teal:0 0 0 3px rgba(11,110,105,.16), 0 8px 20px rgba(11,110,105,.30);
+  --glow-soft:0 0 0 3px rgba(11,110,105,.12), 0 6px 16px rgba(11,110,105,.16);
+  --glow-danger:0 0 0 3px rgba(220,38,38,.14), 0 6px 16px rgba(220,38,38,.24);
+  --glow-amber:0 0 0 3px rgba(180,83,9,.13), 0 6px 16px rgba(180,83,9,.20);
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+body{
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-feature-settings:'cv05' 1,'ss01' 1;
+}
+
+/* ── Typography ────────────────────────────────────────────────────────────
+   Inter reads lighter than the previous serif at display sizes, so the
+   large headings get a touch more weight and tighter tracking. */
+h1,h2,h3,h4,h5{font-family:var(--font)}
+.login-art h1{font-weight:700;letter-spacing:-.035em}
+.page-header h1{font-weight:700;letter-spacing:-.028em}
+.login-card h2{font-weight:700;letter-spacing:-.025em}
+.detail-panel h2,.study-modal-header h2,.modal-header h3{font-weight:700;letter-spacing:-.018em}
+.panel h3,.framework-head h3,.class-card h3,.group-head h3{letter-spacing:-.012em}
+.stat-card strong,.mini-stat strong,.group-count{font-weight:700;letter-spacing:-.025em;font-variant-numeric:tabular-nums}
+.table-row,.master-row,.question-row,.school-row,.custom-data-table{font-variant-numeric:tabular-nums}
+.eyebrow,.detail-section strong{letter-spacing:.12em}
+.prompt-code{font-family:var(--font-mono)}
+
+/* ── Cards: resting elevation + hover lift ─────────────────────────────────
+   Grouped by behaviour rather than by feature so every card in the app
+   responds the same way. */
+.panel,
+.stat-card,
+.mini-stat,
+.subject-card,
+.competency-card,
+.saved-set-card,
+.history-item-card,
+.question-item-card,
+.concrete-item-card,
+.worksheet-card,
+.parent-tip-card,
+.parent-signal-card,
+.material-hero-card,
+.wizard-card,
+.level-group-card,
+.session-detail-panel,
+.learning-group-tile,
+.classroom-card-pill,
+.recommendation-box,
+.graph-node,
+.action-link,
+.profile-card-btn,
+.notice,
+.sync-banner,
+.login-card{
+  transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s var(--ease),background-color .18s var(--ease);
+}
+
+.panel,
+.stat-card,
+.mini-stat,
+.saved-set-card,
+.history-item-card,
+.worksheet-card,
+.wizard-card,
+.level-group-card,
+.session-detail-panel,
+.subject-card,
+.learning-group-tile,
+.classroom-card-pill{
+  box-shadow:var(--elev-1);
+}
+
+.login-card{box-shadow:var(--elev-3)}
+
+/* Lift on hover — the card reads as raised toward the pointer. */
+.stat-card:hover,
+.mini-stat:hover,
+.subject-card:hover,
+.competency-card:hover,
+.saved-set-card:hover,
+.history-item-card:hover,
+.question-item-card:hover,
+.worksheet-card:hover,
+.parent-tip-card:hover,
+.material-hero-card:hover,
+.wizard-card:hover,
+.level-group-card:hover,
+.learning-group-tile:hover,
+.classroom-card-pill:hover,
+.recommendation-box:hover,
+.graph-node:hover,
+.class-card:hover,
+.session-detail-panel:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--elev-2);
+  border-color:#c9ded8;
+}
+
+/* Large page containers deepen without moving — a whole panel sliding
+   under the cursor feels unstable. */
+.panel:hover{box-shadow:var(--elev-2)}
+.panel.graph-canvas:hover,.panel.list-panel:hover{box-shadow:var(--elev-1)}
+
+/* Interactive cards that are also buttons pick up the brand tint. */
+.action-link:hover,
+.profile-card-btn:hover,
+.classroom-card-pill:hover,
+.subject-card:hover{
+  border-color:var(--teal);
+}
+.action-link:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--glow-soft);
+  background:#f1f8f6;
+}
+.concrete-item-card:hover{background:#f1f5f9;box-shadow:var(--elev-1)}
+
+.stat-card:active,.subject-card:active,.saved-set-card:active,
+.history-item-card:active,.learning-group-tile:active,
+.classroom-card-pill:active,.action-link:active,.profile-card-btn:active{
+  transform:translateY(-1px);
+}
+
+/* ── Buttons: glow on hover, press on active ───────────────────────────────
+   The `button` element selector covers ad-hoc buttons that carry no class. */
+button,
+.primary,.secondary,.small-button,.filter-button,.tab-btn,
+.grade-chip-btn,.subject-pill,.level-btn-pill,.icon-btn-action,
+.ai-link-btn,.icon-button,.text-button,.link-button,.nav-item{
+  transition:transform .16s var(--ease),box-shadow .16s var(--ease),
+             background-color .16s var(--ease),color .16s var(--ease),
+             border-color .16s var(--ease),filter .16s var(--ease);
+}
+
+.primary{box-shadow:0 2px 6px rgba(11,110,105,.22)}
+.primary:hover{
+  background:var(--teal-dark);
+  transform:translateY(-2px);
+  box-shadow:var(--glow-teal);
+}
+.primary:active{transform:translateY(0);box-shadow:0 2px 6px rgba(11,110,105,.28)}
+
+.secondary:hover{
+  background:#d8ece6;
+  transform:translateY(-2px);
+  box-shadow:var(--glow-soft);
+}
+.secondary:active{transform:translateY(0);box-shadow:none}
+
+.btn-success:hover{
+  background:#bbf7d0 !important;
+  transform:translateY(-2px);
+  box-shadow:0 0 0 3px rgba(21,128,61,.13),0 6px 16px rgba(21,128,61,.22);
+}
+
+.small-button:hover,.filter-button:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--glow-soft);
+  filter:brightness(.98);
+}
+.small-button:active,.filter-button:active{transform:translateY(0);box-shadow:none}
+
+.tab-btn:hover{background:#e6f2ef;color:var(--teal)}
+.tab-btn.active:hover{background:var(--teal-dark);color:#fff;box-shadow:var(--glow-teal);transform:translateY(-2px)}
+
+.grade-chip-btn:hover,.subject-pill:hover,.level-btn-pill:hover,.opt-chip:hover{
+  transform:translateY(-2px);
+  border-color:var(--teal);
+  box-shadow:var(--glow-soft);
+}
+.grade-chip-btn.active:hover,.subject-pill.active:hover{box-shadow:var(--glow-teal)}
+
+.icon-btn-action:hover,.icon-button:hover{
+  transform:translateY(-1px);
+  box-shadow:var(--glow-soft);
+  color:var(--teal);
+}
+.icon-btn-action.danger:hover{box-shadow:var(--glow-danger)}
+
+.ai-link-btn:hover{transform:translateY(-2px);box-shadow:var(--elev-2)}
+
+.button.highlight-amber:hover,button.highlight-amber:hover{transform:translateY(-2px);box-shadow:var(--glow-amber)}
+.button.highlight-blue:hover,button.highlight-blue:hover{background:#dbeafe;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(29,78,216,.13),0 6px 16px rgba(29,78,216,.22)}
+.button.highlight-teal:hover,button.highlight-teal:hover{background:#99f6e4;transform:translateY(-2px);box-shadow:var(--glow-soft)}
+
+.text-button:hover,.link-button:hover{color:var(--teal-dark);transform:translateX(2px)}
+.nav-item:hover{transform:translateX(2px)}
+.nav-item.active:hover{background:#d4ebe4;box-shadow:inset 0 0 0 1px rgba(11,110,105,.18)}
+.tab:hover,.s-tab:hover{color:var(--teal)}
+
+/* Rows and list items respond too, so the whole surface feels alive. */
+.master-row:hover,.question-row:hover,.school-row:hover,
+.student-row:hover,.table-row:hover,.coverage-row:hover{
+  background:#f7fbfa;
+}
+
+/* ── Popups: modals and toasts get a pop-in and an ambient glow ───────────── */
+.modal-overlay{animation:overlayFade .18s var(--ease)}
+@keyframes overlayFade{from{opacity:0}to{opacity:1}}
+
+.modal-content,.study-material-dialog,.student-progress-modal{
+  animation:popIn .24s var(--ease);
+  box-shadow:0 0 0 1px rgba(255,255,255,.06),
+             0 24px 60px rgba(15,23,42,.32),
+             0 0 70px rgba(11,110,105,.22);
+}
+@keyframes popIn{
+  from{opacity:0;transform:translateY(14px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+.floating-toast{
+  box-shadow:0 12px 30px rgba(0,0,0,.28),0 0 32px rgba(11,110,105,.35);
+}
+
+/* ── Focus: a visible ring for keyboard users on every interactive target ── */
+button:focus-visible,a:focus-visible,input:focus-visible,
+select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--teal);
+  outline-offset:2px;
+  border-radius:8px;
+}
+.login-card input:focus,.login-card select:focus,.search:focus-within{
+  border-color:var(--teal);
+  box-shadow:0 0 0 3px rgba(11,110,105,.13);
+}
+
+/* ── Respect the user's motion preference ─────────────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+  .stat-card:hover,.mini-stat:hover,.subject-card:hover,.competency-card:hover,
+  .saved-set-card:hover,.history-item-card:hover,.question-item-card:hover,
+  .worksheet-card:hover,.parent-tip-card:hover,.material-hero-card:hover,
+  .wizard-card:hover,.level-group-card:hover,.learning-group-tile:hover,
+  .classroom-card-pill:hover,.recommendation-box:hover,.graph-node:hover,
+  .class-card:hover,.session-detail-panel:hover,.action-link:hover,
+  .primary:hover,.secondary:hover,.small-button:hover,.filter-button:hover,
+  .grade-chip-btn:hover,.subject-pill:hover,.level-btn-pill:hover,
+  .icon-btn-action:hover,.icon-button:hover,.ai-link-btn:hover,
+  .nav-item:hover,.text-button:hover,.link-button:hover{
+    transform:none;
+  }
+}
+
+/* Touch devices have no hover state; drop the lift so taps don't stick. */
+@media (hover:none){
+  .stat-card:hover,.subject-card:hover,.saved-set-card:hover,
+  .history-item-card:hover,.learning-group-tile:hover,
+  .classroom-card-pill:hover,.action-link:hover,.graph-node:hover,
+  .primary:hover,.secondary:hover,.small-button:hover{
+    transform:none;
+  }
+}
+
+@media print{
+  .panel,.stat-card,.mini-stat,.wizard-card,.worksheet-card{box-shadow:none}
+}

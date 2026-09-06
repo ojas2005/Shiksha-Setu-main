@@ -13,6 +13,7 @@ import { loadData, resetDemoData } from './db';
 import type { DemoUser, SeedData } from './types';
 import './styles.css';
 import './extra.css';
+import './ui-polish.css';
 import {
   AcademicStructure, Questions, KnowledgeGraph, Schools, SyncQueue,
   Classes, Assessments, TeachingGroups, ParentProgress

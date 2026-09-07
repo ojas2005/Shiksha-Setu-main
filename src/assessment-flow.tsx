@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import type { SeedData, GeneratedPaper, AssessmentSession, GroupRecommendation, SavedQuestionSet, Student } from './types';
-import { CLASS_SUBJECT_MAP, CLASS_LABELS } from './data';
+import { CLASS_SUBJECT_MAP, CLASS_LABELS, getLevelLabel, MONTHS_LIST, YEARS_LIST } from './data';
 import { EducationGraph, getQuestionsForAssessment } from './knowledge-graph';
 import { downloadStudentPaper, downloadAnswerKey } from './print-paper';
 import { parseResultsCSV, mapResultsToStudents, buildGroupRecommendations } from './services';
@@ -26,9 +26,12 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
   // Step 1 Form State
   const [selectedClassId, setSelectedClassId] = useState<string>(data.classrooms[0]?.id || 'class-multigrade-1');
   const [selectedSubject, setSelectedSubject] = useState<string>('mat');
-  const [selectedMonth, setSelectedMonth] = useState<string>('September 2026');
+  const [selectedMonthName, setSelectedMonthName] = useState<string>('September');
+  const [selectedYear, setSelectedYear] = useState<string>('2026');
+  const selectedMonth = useMemo(() => `${selectedMonthName} ${selectedYear}`, [selectedMonthName, selectedYear]);
   const [setNumber, setSetNumber] = useState<string>('01');
   const [framingMode, setFramingMode] = useState<'EQUAL_PROPORTION' | 'GAUSSIAN'>('EQUAL_PROPORTION');
+  const [gaussianCenterLevelId, setGaussianCenterLevelId] = useState<string>('l3');
   const [questionCount, setQuestionCount] = useState<number>(5);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
@@ -44,25 +47,38 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
   const [isSavingSession, setIsSavingSession] = useState<boolean>(false);
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
+  // Selected Standard ID helper
+  const selectedStandardId = useMemo(() => {
+    const classObj = data.classrooms.find(c => c.id === selectedClassId);
+    if (!classObj) return 'std-6';
+    if (classObj.name.includes('Grade 12')) return 'std-12';
+    if (classObj.name.includes('Grade 11')) return 'std-11';
+    if (classObj.name.includes('Grade 10')) return 'std-10';
+    if (classObj.name.includes('Grade 9')) return 'std-9';
+    if (classObj.name.includes('Grade 8')) return 'std-8';
+    if (classObj.name.includes('Grade 7')) return 'std-7';
+    return 'std-6';
+  }, [selectedClassId, data.classrooms]);
+
   // Generate standard_month_setno identifier
   const computedSetName = useMemo(() => {
-    const classObj = data.classrooms.find(c => c.id === selectedClassId);
-    let classPrefix = 'std3';
-    if (classObj) {
-      if (classObj.name.includes('Grade 6')) classPrefix = 'std6';
-      else if (classObj.name.includes('Grade 5')) classPrefix = 'std5';
-      else if (classObj.name.includes('Grade 1, 3, 4')) classPrefix = 'std1_3_4';
-      else if (classObj.name.includes('Grade 7')) classPrefix = 'std7';
-      else if (classObj.name.includes('Grade 8')) classPrefix = 'std8';
-    }
+    const classPrefix = selectedStandardId.replace('-', '');
     const monthClean = selectedMonth.toLowerCase().replace(/\s+/g, '');
     return `${classPrefix}_${monthClean}_set${setNumber}`;
-  }, [selectedClassId, selectedMonth, setNumber, data.classrooms]);
+  }, [selectedStandardId, selectedMonth, setNumber]);
 
-  // Available subjects
+  // Available subjects dynamic based on class mapping (6-8: hin, eng, mat, sci | 9-12: eng, mat, bio, che, phy)
   const availableSubjects = useMemo(() => {
-    return data.subjects.slice(0, 4);
-  }, [data.subjects]);
+    const allowedSubjectIds = CLASS_SUBJECT_MAP[selectedStandardId] || ['hin', 'eng', 'mat', 'sci'];
+    return data.subjects.filter(s => allowedSubjectIds.includes(s.id));
+  }, [selectedStandardId, data.subjects]);
+
+  // Ensure selectedSubject is valid for selected class
+  React.useEffect(() => {
+    if (availableSubjects.length > 0 && !availableSubjects.some(s => s.id === selectedSubject)) {
+      setSelectedSubject(availableSubjects[0].id);
+    }
+  }, [availableSubjects, selectedSubject]);
 
   // Step 1: Generate Paper Covering All Levels
   const handleGeneratePaper = async () => {
@@ -75,31 +91,40 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
       let distribution: Record<string, number> = {};
 
       if (framingMode === 'EQUAL_PROPORTION') {
-        // Calibrated equal proportion: Pick 1 question from each level L1 to L5
+        // Equal proportion across levels L1 to L5
+        const targetPerLevel = Math.max(1, Math.floor(questionCount / data.levels.length));
+        let countAssigned = 0;
         for (const lvl of data.levels) {
-          const match = data.questions.find(
-            q => q.subjectId === selectedSubject && q.levelId === lvl.id
-          ) || data.questions.find(q => q.levelId === lvl.id) || data.questions[0];
+          const matches = data.questions.filter(
+            q => q.subjectId === selectedSubject && q.levelId === lvl.id && (q.standardId === selectedStandardId || !q.standardId)
+          );
+          const fallbackMatches = data.questions.filter(q => q.subjectId === selectedSubject && q.levelId === lvl.id);
+          const pool = matches.length > 0 ? matches : (fallbackMatches.length > 0 ? fallbackMatches : data.questions);
 
-          if (match) {
-            selectedQuestions.push(match);
-            distribution[lvl.id] = (distribution[lvl.id] || 0) + 1;
+          for (let k = 0; k < targetPerLevel && countAssigned < questionCount; k++) {
+            const selected = pool[k % pool.length];
+            if (selected) {
+              selectedQuestions.push(selected);
+              distribution[lvl.id] = (distribution[lvl.id] || 0) + 1;
+              countAssigned++;
+            }
           }
         }
       } else {
-        // Gaussian distribution centered on L3
+        // Gaussian distribution centered on user-selected gaussianCenterLevelId
         const result = getQuestionsForAssessment(
           graph,
           data,
-          'std-6',
+          selectedStandardId,
           selectedSubject,
-          'l3',
+          gaussianCenterLevelId,
           questionCount
         );
         selectedQuestions = result.questions;
         distribution = result.distribution;
       }
 
+      const targetLvlObj = data.levels.find(l => l.id === gaussianCenterLevelId) || data.levels[2];
       const generatedPaper: GeneratedPaper = {
         id: `paper-${Date.now()}`,
         setName: computedSetName,
@@ -108,8 +133,10 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
         className: targetClassObj.name,
         subjectId: selectedSubject,
         subjectName: subjectObj.name,
-        targetLevelId: 'l3',
-        targetLevelName: 'Calibrated L1–L5 Coverage',
+        targetLevelId: framingMode === 'GAUSSIAN' ? gaussianCenterLevelId : 'l3',
+        targetLevelName: framingMode === 'GAUSSIAN'
+          ? `Gaussian Peak at ${targetLvlObj.code} (${getLevelLabel(selectedSubject, targetLvlObj.id)})`
+          : 'Calibrated L1–L5 Coverage',
         totalQuestions: selectedQuestions.length,
         questions: selectedQuestions,
         levelDistribution: distribution,
@@ -269,36 +296,90 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
   // Pre-Engineered Multimodal Prompt for Google Gemini / ChatGPT
   const promptTemplate = `You are an expert AI evaluator for Shiksha Setu (Learning Recovery Tool) under the NEP 2020 framework.
 
-Evaluation Context:
-Class / Room: ${paper?.className || data.classrooms[0]?.name}
-Subject: ${paper?.subjectName || 'Mathematics'}
-Assessment Set Name: ${paper?.setName || computedSetName}
-Total Questions: ${paper?.totalQuestions || 5}
+==================================================
+EVALUATION CONTEXT
 
-Reference Question Set & Marking Criteria:
+Class / Room:
+${paper?.className || data.classrooms[0]?.name}
+
+Subject:
+${paper?.subjectName || 'Mathematics'}
+
+Assessment Set Name:
+${paper?.setName || computedSetName}
+
+Total Questions:
+${paper?.totalQuestions || 5}
+
+==================================================
+ANSWER KEY & MARKING SCHEME
+
 ${paper?.questions.map((q, i) => {
   const lvl = data.levels.find(l => l.id === q.levelId);
-  return `${i + 1}. [${lvl?.code} - ${lvl?.name}] [${q.type}] ${q.text}\n   -> Correct Answer: ${q.answer} (${q.marks || 1} mark${(q.marks || 1) > 1 ? 's' : ''})`;
-}).join('\n') || ''}
+  return `${i + 1}. [${lvl?.code} - ${lvl?.name}]
+Question Type: ${q.type}
+Question: ${q.text}
+Correct Answer: ${q.answer}
+Marks: ${q.marks || 1}`;
+}).join('\n\n') || ''}
 
-Task:
-Evaluate the attached student answer sheets (photographed response papers) against the reference key above.
-For each student, evaluate their answers level-by-level (L1 to L5) and assign:
-1. Roll Number (written at top of paper)
-2. Student Name (if visible, otherwise leave blank)
-3. Date of Assessment
-4. Marks obtained for each Level: L1 Mark, L2 Mark, L3 Mark, L4 Mark, L5 Mark
-5. Final Level (1 to 5) determined by highest mastery level achieved
-6. Brief Teacher Remark
+==================================================
+TASK
 
-OUTPUT FORMAT REQUIREMENT:
-Respond ONLY with a standard CSV table. Do not include markdown code block quotes or extra conversational commentary.
+Evaluate all attached student answer sheets.
+For each student:
+1. Extract Roll Number.
+2. Extract Student Name if available.
+3. Extract Assessment Date if available.
+4. Compare every answer against the answer key.
+5. Award FULL marks if correct.
+6. Award ZERO marks if incorrect.
+7. Record marks under the corresponding learning level.
 
-Predefined CSV Format:
-Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mark, L5 Mark, Final Level, Remarks
-1, Anita Devi, 2026-09-05, 1, 1, 0, 0, 0, 2, Emerging word reader
-2, Sohan Lal, 2026-09-05, 1, 1, 2, 0, 0, 3, Developing 2-digit addition
-14, Rekha Kumari, 2026-09-05, 1, 1, 2, 2, 0, 4, Sentence fluency checked`;
+==================================================
+SCORING RULES
+
+- Correct Answer = Full Marks
+- Incorrect Answer = 0 Marks
+- Blank Answer = 0 Marks
+- Do not partially award marks.
+- Sum marks for each level separately.
+- Final Level = Highest level where student has scored marks (if multiple levels have marks, pick the highest)
+
+==================================================
+OUTPUT REQUIREMENTS
+
+Return ONLY valid downloadable CSV.
+
+DO NOT return:
+
+- Markdown
+- JSON
+- Code Blocks
+- Explanations
+- Notes
+- Comments
+- Additional Text
+
+The first row MUST be the CSV header.
+
+==================================================
+CSV FORMAT
+
+Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mark, L5 Mark, Final Level
+
+==================================================
+EXAMPLE OUTPUT
+
+Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mark, L5 Mark, Final Level
+1, Anita Devi, 2026-09-05, 1, 1, 0, 0, 0, 2
+2, Sohan Lal, 2026-09-05, 1, 1, 2, 0, 0, 3
+14, Rekha Kumari, 2026-09-05, 1, 1, 2, 2, 0, 4
+
+IMPORTANT:
+- Generate one downloadable CSV row per student.
+- Return valid CSV only.
+- No extra text before or after the CSV.`;
 
   const copyPromptToClipboard = () => {
     navigator.clipboard.writeText(promptTemplate);
@@ -311,7 +392,7 @@ Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mar
     if (!paper) return [];
     return data.levels.map(lvl => ({
       name: lvl.code,
-      fullName: lvl.name,
+      fullName: getLevelLabel(paper.subjectId, lvl.id),
       count: paper.levelDistribution[lvl.id] || 0,
       color: lvl.color,
     }));
@@ -383,13 +464,19 @@ Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mar
             </div>
 
             <div className="form-group">
-              <label>Assessment Month</label>
-              <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}>
-                <option value="August 2026">August 2026</option>
-                <option value="September 2026">September 2026</option>
-                <option value="October 2026">October 2026</option>
-                <option value="November 2026">November 2026</option>
-              </select>
+              <label>Assessment Month & Year</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <select value={selectedMonthName} onChange={e => setSelectedMonthName(e.target.value)}>
+                  {MONTHS_LIST.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
+                  {YEARS_LIST.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="form-group">
@@ -402,12 +489,41 @@ Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mar
             </div>
 
             <div className="form-group">
-              <label>Level Distribution Framing</label>
-              <select value={framingMode} onChange={e => setFramingMode(e.target.value as any)}>
-                <option value="EQUAL_PROPORTION">Equal Proportion: 1 Question per Level (L1–L5)</option>
-                <option value="GAUSSIAN">Gaussian Distribution (Centered on L3)</option>
+              <label>Total Number of Questions</label>
+              <select
+                value={questionCount}
+                onChange={e => setQuestionCount(parseInt(e.target.value, 10))}
+              >
+                <option value={5}>5 Questions (5-Min Quick Pulse)</option>
+                <option value={10}>10 Questions (Standard Assessment)</option>
+                <option value={15}>15 Questions (Detailed Diagnostic)</option>
+                <option value={20}>20 Questions (Comprehensive Paper)</option>
               </select>
             </div>
+
+            <div className="form-group">
+              <label>Level Distribution Framing</label>
+              <select value={framingMode} onChange={e => setFramingMode(e.target.value as any)}>
+                <option value="EQUAL_PROPORTION">Equal Proportion Across Levels (L1–L5)</option>
+                <option value="GAUSSIAN">Gaussian Normal Distribution (Weighted Peak Level)</option>
+              </select>
+            </div>
+
+            {framingMode === 'GAUSSIAN' && (
+              <div className="form-group animate-fade-in">
+                <label>Gaussian Peak Level (Center Difficulty)</label>
+                <select
+                  value={gaussianCenterLevelId}
+                  onChange={e => setGaussianCenterLevelId(e.target.value)}
+                >
+                  {data.levels.map(l => (
+                    <option key={l.id} value={l.id}>
+                      {l.code} - {getLevelLabel(selectedSubject, l.id)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="form-group">
               <label>Generated Set Identifier</label>
@@ -557,7 +673,7 @@ Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mar
             <div>
               <h2>Step 3: GenAI Grading Studio (Google Gemini / ChatGPT)</h2>
               <p className="muted">
-                Use your smartphone photo of student response sheets with this pre-engineered multimodal prompt to evaluate offline assessments in seconds.
+                Copy the prompt below and send it along with photos of student answer sheets to Gemini or ChatGPT. The AI will evaluate and return a CSV with results.
               </p>
             </div>
           </div>
@@ -567,29 +683,22 @@ Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mar
               <div className="instr-step">
                 <span className="step-num">1</span>
                 <div>
-                  <strong>Get Worksheet & Reference Key</strong>
-                  <p>Keep your downloaded Student Paper and Answer Key reference ready.</p>
+                  <strong>Photograph Student Response Sheets</strong>
+                  <p>Take clear photos of each student's handwritten answers.</p>
                 </div>
               </div>
               <div className="instr-step">
                 <span className="step-num">2</span>
                 <div>
-                  <strong>Photograph Student Response Sheets</strong>
-                  <p>Take one clear photo of each student's handwritten answer sheet.</p>
+                  <strong>Copy the Evaluation Prompt</strong>
+                  <p>Click the "Copy Prompt" button on the right.</p>
                 </div>
               </div>
               <div className="instr-step">
                 <span className="step-num">3</span>
                 <div>
-                  <strong>Copy Evaluation Prompt</strong>
-                  <p>Click "Copy Prompt Template" on the right.</p>
-                </div>
-              </div>
-              <div className="instr-step">
-                <span className="step-num">4</span>
-                <div>
                   <strong>Send to Gemini or ChatGPT</strong>
-                  <p>Paste the prompt and upload the photos to your AI assistant.</p>
+                  <p>Paste the prompt and upload student photos to your AI assistant.</p>
                   <div className="external-ai-links">
                     <a
                       href="https://gemini.google.com"
@@ -611,10 +720,10 @@ Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mar
                 </div>
               </div>
               <div className="instr-step">
-                <span className="step-num">5</span>
+                <span className="step-num">4</span>
                 <div>
-                  <strong>Bring Result CSV Back to Step 4</strong>
-                  <p>Copy the CSV output table and proceed to Step 4 to upload.</p>
+                  <strong>Proceed to Step 4</strong>
+                  <p>Copy the CSV output and paste it in Step 4 to update student levels.</p>
                 </div>
               </div>
             </div>
@@ -664,11 +773,34 @@ Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mar
           </div>
 
           {/* Upload Area */}
-          <div className="upload-box">
-            <Upload size={36} className="text-teal" />
-            <p><strong>Drag and drop Gemini / ChatGPT CSV file here</strong> or click to browse</p>
-            <span className="tiny-note">Accepts .csv, .txt formatted tables</span>
-            <input type="file" accept=".csv,.xlsx,.txt" onChange={handleFileUpload} />
+          <div className="upload-area-section">
+            <div className="upload-tabs">
+              <div className="tab-option">
+                <strong>Option 1: Upload CSV File</strong>
+                <div className="upload-box">
+                  <Upload size={36} className="text-teal" />
+                  <p><strong>Drag and drop Gemini / ChatGPT CSV file here</strong> or click to browse</p>
+                  <span className="tiny-note">Accepts .csv, .xlsx, .txt formatted tables</span>
+                  <input type="file" accept=".csv,.xlsx,.txt" onChange={handleFileUpload} />
+                </div>
+              </div>
+
+              <div className="tab-option">
+                <strong>Option 2: Paste CSV Output</strong>
+                <p className="muted" style={{ marginBottom: '12px' }}>Since Gemini does not provide downloadable CSV, copy and paste the result table below:</p>
+                <textarea
+                  placeholder="Paste CSV output from Gemini / ChatGPT here...\n\nExample:\nRoll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mark, L5 Mark, Final Level\n1, Anita Devi, 2026-09-05, 1, 1, 0, 0, 0, 2\n2, Sohan Lal, 2026-09-05, 1, 1, 2, 0, 0, 3"
+                  value={rawCsvInput}
+                  onChange={(e) => {
+                    setRawCsvInput(e.target.value);
+                    if (e.target.value.trim()) {
+                      processCSV(e.target.value);
+                    }
+                  }}
+                  className="csv-textarea"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Grouping Cards from Knowledge Graph */}

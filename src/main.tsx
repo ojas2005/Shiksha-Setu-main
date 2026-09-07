@@ -39,7 +39,7 @@ const navAdmin = [
 const navTeacher = [
   { label: 'My Dashboard', path: '/teacher/dashboard', icon: LayoutDashboard },
   { label: '5-Min Assessment', path: '/teacher/new-assessment', icon: ClipboardCheck },
-  { label: 'Saved Sets (stand_month)', path: '/teacher/saved-sets', icon: BookmarkPlus },
+  { label: 'Saved Question Sets', path: '/teacher/saved-sets', icon: BookmarkPlus },
   { label: 'Student Register', path: '/teacher/student-register', icon: UserPlus },
   { label: 'Classes & Monthly Reports', path: '/teacher/classes', icon: Users },
   { label: 'Teaching Groups', path: '/teacher/teaching-groups', icon: Sparkles },
@@ -312,7 +312,7 @@ function AdminDashboard({ data }: { data: SeedData }) {
         </div>
         <div className="stat-card">
           <div className="stat-icon green"><Database size={18} /></div>
-          <div><strong>{data.students.length}</strong><span>Students Enrolled</span><small>Grades 1–8</small></div>
+          <div><strong>{data.students.length}</strong><span>Students Enrolled</span><small>Classes 6–12</small></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon purple"><Database size={18} /></div>

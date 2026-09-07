@@ -16,56 +16,59 @@ export const levels = [
 ];
 
 export const subjects = [
-  { id: 'mat', code: 'MAT', name: 'Mathematics / Numeracy', color: '#cf6d39' },
-  { id: 'eng', code: 'ENG', name: 'English', color: '#3d79a5' },
   { id: 'hin', code: 'HIN', name: 'Hindi / भाषा', color: '#8b5a9b' },
+  { id: 'eng', code: 'ENG', name: 'English', color: '#3d79a5' },
+  { id: 'mat', code: 'MAT', name: 'Mathematics / Numeracy', color: '#cf6d39' },
   { id: 'sci', code: 'SCI', name: 'Science', color: '#2b927d' },
-  { id: 'soc', code: 'SOC', name: 'Social Studies', color: '#7770a5' },
-  { id: 'evs', code: 'EVS', name: 'Environmental Studies', color: '#5b916f' },
+  { id: 'bio', code: 'BIO', name: 'Biology', color: '#48bb78' },
+  { id: 'che', code: 'CHE', name: 'Chemistry', color: '#ed8936' },
+  { id: 'phy', code: 'PHY', name: 'Physics', color: '#4299e1' },
 ];
 
 export const CLASS_SUBJECT_MAP: Record<string, string[]> = {
-  'std-1':  ['hin', 'eng', 'mat', 'evs'],
-  'std-2':  ['hin', 'eng', 'mat', 'evs'],
-  'std-3':  ['hin', 'eng', 'mat', 'evs'],
-  'std-4':  ['hin', 'eng', 'mat', 'evs', 'sci'],
-  'std-5':  ['hin', 'eng', 'mat', 'sci', 'soc'],
-  'std-6':  ['hin', 'eng', 'mat', 'sci', 'soc'],
-  'std-7':  ['hin', 'eng', 'mat', 'sci', 'soc'],
-  'std-8':  ['hin', 'eng', 'mat', 'sci', 'soc'],
+  'std-6':  ['hin', 'eng', 'mat', 'sci'],
+  'std-7':  ['hin', 'eng', 'mat', 'sci'],
+  'std-8':  ['hin', 'eng', 'mat', 'sci'],
+  'std-9':  ['eng', 'mat', 'bio', 'che', 'phy'],
+  'std-10': ['eng', 'mat', 'bio', 'che', 'phy'],
+  'std-11': ['eng', 'mat', 'bio', 'che', 'phy'],
+  'std-12': ['eng', 'mat', 'bio', 'che', 'phy'],
 };
 
 export const CLASS_LABELS: Record<string, string> = {
-  'std-1': 'Grade 1',
-  'std-2': 'Grade 2',
-  'std-3': 'Grade 3',
-  'std-4': 'Grade 4',
-  'std-5': 'Grade 5',
   'std-6': 'Grade 6',
   'std-7': 'Grade 7',
   'std-8': 'Grade 8',
+  'std-9': 'Grade 9',
+  'std-10': 'Grade 10',
+  'std-11': 'Grade 11',
+  'std-12': 'Grade 12',
 };
+
+export const MONTHS_LIST = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+export const YEARS_LIST = ['2024', '2025', '2026', '2027', '2028', '2029', '2030'];
+
+// Reading-fluency level names (Non-Reader/Letter/Word/Sentence Reader) only make sense for literacy subjects.
+const LITERACY_SUBJECTS = new Set(['hin', 'eng']);
+const GENERIC_LEVEL_NAMES: Record<string, string> = {
+  l1: 'Foundation',
+  l2: 'Emerging',
+  l3: 'Developing',
+  l4: 'Proficient',
+  l5: 'Advanced',
+};
+export function getLevelLabel(subjectId: string, levelId: string): string {
+  const lvl = levels.find(l => l.id === levelId);
+  if (!lvl) return levelId;
+  return LITERACY_SUBJECTS.has(subjectId) ? lvl.name : (GENERIC_LEVEL_NAMES[levelId] || lvl.name);
+}
 
 // ── Multi-grade Classrooms ───────────────────────────────────────────────────
 export const seedClassrooms: Classroom[] = [
-  {
-    id: 'class-multigrade-1',
-    name: 'Grade 1, 3, 4 · Room B',
-    grades: ['Grade 1', 'Grade 3', 'Grade 4'],
-    roomName: 'Room B',
-    teacherName: 'Sunita Devi (Jha)',
-    studentCount: 42,
-    academicYear: '2026–27',
-  },
-  {
-    id: 'class-5-a',
-    name: 'Grade 5 · Room A',
-    grades: ['Grade 5'],
-    roomName: 'Room A',
-    teacherName: 'Sunita Devi (Jha)',
-    studentCount: 35,
-    academicYear: '2026–27',
-  },
   {
     id: 'class-6-a',
     name: 'Grade 6 · Section A',
@@ -91,6 +94,42 @@ export const seedClassrooms: Classroom[] = [
     roomName: 'Section A',
     teacherName: 'Anita Sharma',
     studentCount: 32,
+    academicYear: '2026–27',
+  },
+  {
+    id: 'class-9-a',
+    name: 'Grade 9 · Sec A (Sci/Maths)',
+    grades: ['Grade 9'],
+    roomName: 'Sec A',
+    teacherName: 'Sunita Devi (Jha)',
+    studentCount: 36,
+    academicYear: '2026–27',
+  },
+  {
+    id: 'class-10-a',
+    name: 'Grade 10 · Sec A (Sci/Maths)',
+    grades: ['Grade 10'],
+    roomName: 'Sec A',
+    teacherName: 'Sunita Devi (Jha)',
+    studentCount: 34,
+    academicYear: '2026–27',
+  },
+  {
+    id: 'class-11-a',
+    name: 'Grade 11 · Senior Science Stream',
+    grades: ['Grade 11'],
+    roomName: 'Lab 1',
+    teacherName: 'Aarav Mehta',
+    studentCount: 25,
+    academicYear: '2026–27',
+  },
+  {
+    id: 'class-12-a',
+    name: 'Grade 12 · Senior Science Stream',
+    grades: ['Grade 12'],
+    roomName: 'Lab 2',
+    teacherName: 'Aarav Mehta',
+    studentCount: 24,
     academicYear: '2026–27',
   },
 ];
@@ -387,16 +426,16 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-1',
     name: 'Rekha Kumari',
-    classId: 'class-multigrade-1',
+    classId: 'class-6-a',
     admission: 'HV-26-001',
     rollNumber: 14,
     gender: 'Girl',
-    gradeLevel: 'Grade 3',
+    gradeLevel: 'Grade 6',
     parentName: 'Rameshwar Kumar',
     parentPhone: '+91 98765 11001',
     parentEmail: 'rameshwar.k@gmail.com',
     trend: 'Improving',
-    focus: 'Mathematics / Numeracy',
+    focus: 'Mathematics',
     level: 'Sentence Reader / Proficient',
     currentLevelId: 'l4',
     readingLevel: 'Sentence Reader (L4)',
@@ -412,11 +451,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-2',
     name: 'Anita Devi',
-    classId: 'class-multigrade-1',
+    classId: 'class-7-b',
     admission: 'HV-26-002',
     rollNumber: 1,
     gender: 'Girl',
-    gradeLevel: 'Grade 1',
+    gradeLevel: 'Grade 7',
     parentName: 'Gopal Devi',
     parentPhone: '+91 98765 11002',
     parentEmail: '',
@@ -437,11 +476,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-3',
     name: 'Sohan Lal',
-    classId: 'class-multigrade-1',
+    classId: 'class-8-a',
     admission: 'HV-26-003',
     rollNumber: 2,
     gender: 'Boy',
-    gradeLevel: 'Grade 3',
+    gradeLevel: 'Grade 8',
     parentName: 'Babulal Lal',
     parentPhone: '+91 98765 11003',
     parentEmail: 'babulal.lal@outlook.com',
@@ -462,11 +501,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-4',
     name: 'Pooja Kumari',
-    classId: 'class-multigrade-1',
+    classId: 'class-9-a',
     admission: 'HV-26-004',
     rollNumber: 3,
     gender: 'Girl',
-    gradeLevel: 'Grade 4',
+    gradeLevel: 'Grade 9',
     parentName: 'Santosh Kumar',
     parentPhone: '+91 98765 11004',
     parentEmail: '',
@@ -487,16 +526,16 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-5',
     name: 'Amit Kumar',
-    classId: 'class-multigrade-1',
+    classId: 'class-10-a',
     admission: 'HV-26-005',
     rollNumber: 4,
     gender: 'Boy',
-    gradeLevel: 'Grade 1',
+    gradeLevel: 'Grade 10',
     parentName: 'Shyam Sundar',
     parentPhone: '+91 98765 11005',
     parentEmail: 'shyam.sundar@yahoo.com',
     trend: 'Review required',
-    focus: 'Hindi / भाषा',
+    focus: 'Physics',
     level: 'Non-Reader / Foundation',
     currentLevelId: 'l1',
     readingLevel: 'Non-Reader (L1)',
@@ -507,21 +546,21 @@ export const seedStudents: Student[] = [
       'August 2026': 1,
       'September 2026': 1,
     },
-    notes: 'Needs dedicated 10-minute tactile flashcard practice every morning.'
+    notes: 'Needs dedicated 10-minute practice every morning.'
   },
   {
     id: 'stu-6',
     name: 'Meera Joshi',
-    classId: 'class-multigrade-1',
+    classId: 'class-11-a',
     admission: 'HV-26-006',
     rollNumber: 5,
     gender: 'Girl',
-    gradeLevel: 'Grade 4',
+    gradeLevel: 'Grade 11',
     parentName: 'Kailash Joshi',
     parentPhone: '+91 98765 11006',
     parentEmail: 'kailash.joshi@gmail.com',
     trend: 'Improving',
-    focus: 'Mathematics',
+    focus: 'Chemistry',
     level: 'Grade-Level Reader / Advanced',
     currentLevelId: 'l5',
     readingLevel: 'Grade-Level (L5)',
@@ -537,16 +576,16 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-7',
     name: 'Kabir Singh',
-    classId: 'class-multigrade-1',
+    classId: 'class-12-a',
     admission: 'HV-26-007',
     rollNumber: 6,
     gender: 'Boy',
-    gradeLevel: 'Grade 3',
+    gradeLevel: 'Grade 12',
     parentName: 'Jaswant Singh',
     parentPhone: '+91 98765 11007',
     parentEmail: '',
     trend: 'Improving',
-    focus: 'Mathematics',
+    focus: 'Biology',
     level: 'Word Reader / Developing',
     currentLevelId: 'l3',
     readingLevel: 'Word Reader (L3)',
@@ -557,16 +596,16 @@ export const seedStudents: Student[] = [
       'August 2026': 3,
       'September 2026': 3,
     },
-    notes: 'Jumped from L2 to L3 after regular bundle-matching practice.'
+    notes: 'Jumped from L2 to L3 after regular practice.'
   },
   {
     id: 'stu-8',
     name: 'Priya Verma',
-    classId: 'class-multigrade-1',
+    classId: 'class-6-a',
     admission: 'HV-26-008',
     rollNumber: 7,
     gender: 'Girl',
-    gradeLevel: 'Grade 1',
+    gradeLevel: 'Grade 6',
     parentName: 'Vijay Verma',
     parentPhone: '+91 98765 11008',
     parentEmail: 'vijay.verma26@gmail.com',
@@ -960,18 +999,31 @@ export const seedSavedSets: SavedQuestionSet[] = [
 
 // ── Competencies & Questions for Knowledge Graph Engine ─────────────────────
 export const competencies: Competency[] = [];
-export const questions: Question[] = [];
+// Seed with hand-authored real questions first so the paper generator (which
+// finds the first subject+level match) prefers real content over templates below.
+const seenRealQuestionKeys = new Set<string>();
+export const questions: Question[] = seedSavedSets
+  .flatMap(set => set.questions)
+  .filter(q => {
+    const key = `${q.subjectId}|${q.levelId}`;
+    if (seenRealQuestionKeys.has(key)) return false;
+    seenRealQuestionKeys.add(key);
+    return true;
+  });
 
 const domainsBySubject: Record<string, string[]> = {
-  mat: ['Number System', 'Geometry', 'Algebra', 'Statistics'],
-  eng: ['Reading and Language', 'Grammar', 'Vocabulary', 'Writing'],
   hin: ['ध्वनि व वर्ण पहचान', 'शब्द रचना', 'वाक्य व अर्थग्रहण', 'रचनात्मक अभिव्यक्ति'],
+  eng: ['Reading and Language', 'Grammar', 'Vocabulary', 'Writing'],
+  mat: ['Number System', 'Geometry', 'Algebra', 'Statistics'],
   sci: ['Living World', 'Forces and Motion', 'Cell Biology', 'Chemical Reactions'],
+  bio: ['Genetics & Evolution', 'Cellular Biology', 'Human Physiology', 'Ecology & Environment'],
+  che: ['Atomic Structure', 'Chemical Bonding', 'Organic Chemistry', 'Thermodynamics & Kinetics'],
+  phy: ['Mechanics & Motion', 'Electromagnetism', 'Optics & Wave Physics', 'Modern Physics & Quantum'],
   soc: ['Civic Life', 'Our Environment', 'History & Heritage'],
   evs: ['Our Surroundings', 'Plants & Animals', 'Clean Water & Air'],
 };
 
-const standards = ['std-1', 'std-2', 'std-3', 'std-4', 'std-5', 'std-6', 'std-7', 'std-8'];
+const standards = ['std-6', 'std-7', 'std-8', 'std-9', 'std-10', 'std-11', 'std-12'];
 
 let compCounter = 1;
 let questionCounter = 1;
@@ -982,10 +1034,11 @@ for (const stdId of standards) {
     const domains = domainsBySubject[subId] || ['General Core', 'Applied Practice'];
     for (const domain of domains) {
       for (const level of levels) {
+        const levelLabel = getLevelLabel(subId, level.id);
         const compId = `comp-${stdId}-${subId}-${compCounter++}`;
-        const title = `${domain} · ${level.name} Competency (${CLASS_LABELS[stdId] || stdId})`;
-        const outcome = `Demonstrates clear mastery and application in ${domain} at ${level.name} standard.`;
-        const teachingActivity = `Next-day action for ${level.name}: Engage students with targeted ${domain.toLowerCase()} hands-on practice and guided feedback.`;
+        const title = `${domain} · ${levelLabel} Competency (${CLASS_LABELS[stdId] || stdId})`;
+        const outcome = `Demonstrates clear mastery and application in ${domain} at ${levelLabel} standard.`;
+        const teachingActivity = `Next-day action for ${levelLabel}: Engage students with targeted ${domain.toLowerCase()} hands-on practice and guided feedback.`;
 
         competencies.push({
           id: compId,
@@ -1005,7 +1058,7 @@ for (const stdId of standards) {
           subjectId: subId,
           competencyId: compId,
           levelId: level.id,
-          text: `[${CLASS_LABELS[stdId]} ${domain}] Identify the key concept of ${domain} for ${level.name}.`,
+          text: `[${CLASS_LABELS[stdId]} ${domain}] Identify the key concept of ${domain} for ${levelLabel}.`,
           options: ['Option A (Fundamental)', 'Option B (Key Principle - Correct)', 'Option C (Alternative)', 'Option D (Extended)'],
           answer: 'Option B (Key Principle - Correct)',
           marks: level.id === 'l1' || level.id === 'l2' ? 1 : level.id === 'l3' || level.id === 'l4' ? 2 : 3,

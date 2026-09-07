@@ -26,10 +26,11 @@ class ShikshaSetuDatabase extends Dexie {
 }
 
 const database = new ShikshaSetuDatabase();
-const SEED_ID = 'seed-data-v2';
+const SEED_ID = 'seed-data-v6';
 
 export async function loadData(): Promise<SeedData> {
   const existing = await database.payload.get(SEED_ID);
+  let loaded: SeedData;
   if (existing) {
     // Merge any dynamically added savedSets or students into memory
     const extraSavedSets = await database.savedSets.toArray();
@@ -55,11 +56,22 @@ export async function loadData(): Promise<SeedData> {
         if (!classIds.has(cl.id)) mergedData.classrooms.push(cl);
       }
     }
-    return mergedData;
+    loaded = mergedData;
+  } else {
+    await database.payload.put({ id: SEED_ID, data: seedData });
+    loaded = seedData;
   }
 
-  await database.payload.put({ id: SEED_ID, data: seedData });
-  return seedData;
+  // Filter out any legacy Grade 1-5 classrooms (checking exact grades array)
+  const legacyGrades = new Set(['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5']);
+  loaded.classrooms = loaded.classrooms.filter(c => !c.grades.some(g => legacyGrades.has(g)));
+  const validClassIds = new Set(loaded.classrooms.map(c => c.id));
+  loaded.students = loaded.students.filter(s => validClassIds.has(s.classId));
+  if (loaded.students.length === 0) {
+    loaded.students = seedData.students;
+  }
+
+  return loaded;
 }
 
 export async function resetDemoData(): Promise<SeedData> {

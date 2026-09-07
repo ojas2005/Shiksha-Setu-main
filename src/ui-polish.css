@@ -441,25 +441,25 @@ html{-webkit-text-size-adjust:100%}
 
 /* Rows of chips/tabs scroll sideways instead of forcing the page to. */
 .tabs,.stepper,.subject-tabs-row,.study-modal-tabs,
-.subject-pills-row,.classrooms-ribbon,.level-switch-ribbon,.level-buttons-row{
+.subject-pills-row,.classrooms-ribbon{
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:thin;
 }
 .tabs::-webkit-scrollbar,.stepper::-webkit-scrollbar,
 .subject-tabs-row::-webkit-scrollbar,.study-modal-tabs::-webkit-scrollbar,
-.classrooms-ribbon::-webkit-scrollbar,.level-buttons-row::-webkit-scrollbar{height:4px}
+.classrooms-ribbon::-webkit-scrollbar{height:4px}
 .tabs::-webkit-scrollbar-thumb,.stepper::-webkit-scrollbar-thumb,
 .subject-tabs-row::-webkit-scrollbar-thumb,.study-modal-tabs::-webkit-scrollbar-thumb,
-.classrooms-ribbon::-webkit-scrollbar-thumb,.level-buttons-row::-webkit-scrollbar-thumb{background:#cfdcd8;border-radius:4px}
+.classrooms-ribbon::-webkit-scrollbar-thumb{background:#cfdcd8;border-radius:4px}
 .tabs>*,.stepper>*,.subject-tabs-row>*,.study-modal-tabs>*,
-.subject-pills-row>*,.classrooms-ribbon>*,.level-buttons-row>*{flex:0 0 auto}
+.subject-pills-row>*,.classrooms-ribbon>*{flex:0 0 auto}
 
 /* A flex/grid child defaults to min-width:auto, so its content can still
    force the page wider even with overflow-x set. These need min-width:0
    for the scroll container to actually take effect. */
 .tabs,.stepper,.subject-tabs-row,.study-modal-tabs,
-.subject-pills-row,.classrooms-ribbon,.level-switch-ribbon,
+.subject-pills-row,.classrooms-ribbon,
 .assessment-wizard,.main-area,.page-content,
 .panel,.wizard-card,.list-panel,.modal-content,
 .students-table-container{min-width:0}
@@ -797,3 +797,30 @@ select{text-overflow:ellipsis}
 .month-selector-inline label,
 .page-size-selector label{font-size:12px}
 .pagination-btn{padding:7px 12px;min-height:0}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Level switcher — study material modal.
+   The ribbon holds a "Level:" label plus five level pills of ~170–210px.
+   It was set to flex-wrap:nowrap with overflow-x:auto, which packed 1002px
+   of pills into a 408px scroller: barely two were visible, inside a modal
+   with plenty of vertical room. It is a control cluster, not a tab strip,
+   so it wraps onto as many lines as it needs instead of scrolling.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.level-switch-ribbon{
+  flex-wrap:wrap;
+  row-gap:10px;
+  overflow-x:visible;
+}
+.level-buttons-row{
+  flex:1 1 320px;
+  min-width:0;
+  flex-wrap:wrap;
+  overflow-x:visible;
+  gap:8px;
+}
+.level-btn-pill{
+  white-space:nowrap;
+  max-width:100%;
+}

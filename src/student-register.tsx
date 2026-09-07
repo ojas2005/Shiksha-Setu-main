@@ -509,15 +509,15 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
                 <div className="form-group">
                   <label>Gender *</label>
                   <select value={gender} onChange={e => setGender(e.target.value as any)}>
-                    <option value="Girl">लड़की / Girl</option>
-                    <option value="Boy">लड़का / Boy</option>
+                    <option value="Girl">Girl</option>
+                    <option value="Boy">Boy</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Student Full Name (छात्र का नाम) *</label>
+                <label>Student Full Name *</label>
                 <input
                   type="text"
                   required
@@ -553,7 +553,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
               </div>
 
               <div className="form-group">
-                <label>Parent / Guardian Name (अभिभावक का नाम)</label>
+                <label>Parent / Guardian Name</label>
                 <input
                   type="text"
                   placeholder="e.g. Rameshwar Kumar"
@@ -564,7 +564,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
 
               <div className="form-row-2">
                 <div className="form-group">
-                  <label>Parent Phone Number (मोबाइल नंबर)</label>
+                  <label>Parent Phone Number</label>
                   <input
                     type="tel"
                     placeholder="+91 98765 43210"
@@ -573,7 +573,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Parent Email (ईमेल - Optional)</label>
+                  <label>Parent Email (Optional)</label>
                   <input
                     type="email"
                     placeholder="parent@email.com"
@@ -613,7 +613,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
             <div className="modal-header space-between">
               <div>
                 <p className="eyebrow">Classroom Setup</p>
-                <h3>Create Classroom (कक्षा बनाएं)</h3>
+                <h3>Create Classroom</h3>
               </div>
               <button className="icon-button" onClick={() => setShowAddClassModal(false)}>
                 <X size={18} />
@@ -622,7 +622,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
 
             <form onSubmit={handleSaveClassroom}>
               <div className="form-group">
-                <label>Teacher Name (शिक्षक का नाम)</label>
+                <label>Teacher Name</label>
                 <input
                   type="text"
                   required
@@ -632,7 +632,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
               </div>
 
               <div className="form-group">
-                <label>Which grades are in this room? (कौन सी कक्षाएं हैं?)</label>
+                <label>Which grades are in this room?</label>
                 <p className="tiny-note" style={{ textAlign: 'left', marginBottom: 8 }}>
                   Tap all grades taught together in this room for multi-grade classrooms.
                 </p>

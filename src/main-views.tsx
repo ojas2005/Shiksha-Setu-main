@@ -4,12 +4,14 @@ import {
   ArrowRight, BookOpen, CheckCircle2, ClipboardCheck, Download, Filter,
   Layers3, RefreshCw, Search, ShieldCheck, SlidersHorizontal, Sparkles,
   User, UserPlus, Phone, Mail, FileText, Calendar, Plus, X, Save,
-  AlertCircle, Eye, Printer, HeartHandshake, ChevronDown, Check, Layers
+  AlertCircle, Eye, Printer, HeartHandshake, ChevronDown, Check, Layers, Network
 } from 'lucide-react';
 import { generateMonthlyPulse, getRecommendation } from './services';
 import type { SeedData, Student, Classroom, Competency, Question } from './types';
 import { StudyMaterialModal } from './study-material-modal';
 import { downloadStudentPaper } from './print-paper';
+import { saveKGEdit } from './db';
+import { CLASS_SUBJECT_MAP, CLASS_LABELS, getLevelLabel, MONTHS_LIST, YEARS_LIST } from './data';
 import jsPDF from 'jspdf';
 
 function PageHeader({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: React.ReactNode }) {
@@ -230,12 +232,24 @@ export function Questions({ data }: { data: SeedData }) {
   const [query, setQuery] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('all');
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filtered = data.questions.filter(q => {
     const matchQ = q.text.toLowerCase().includes(query.toLowerCase());
     const matchSub = selectedSubject === 'all' || q.subjectId === selectedSubject;
     return matchQ && matchSub;
   });
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [query, selectedSubject]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paginatedQuestions = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage, pageSize]);
 
   const handleDownloadCSV = () => {
     const headers = 'ID,Standard,Subject,Level,Type,Marks,Text,Answer';
@@ -298,28 +312,76 @@ export function Questions({ data }: { data: SeedData }) {
           </div>
         </div>
 
-        <div className="master-list">
-          {filtered.slice(0, 15).map(question => {
-            const lvlObj = data.levels.find(l => l.id === question.levelId);
-            return (
-              <div className="question-row" key={question.id}>
-                <span className="q-number">{question.id.replace('q-', '#')}</span>
-                <div>
-                  <strong>{question.text}</strong>
-                  <small>
-                    {question.subjectId.toUpperCase()} · {question.standardId.toUpperCase()} ·
-                    <span style={{ color: lvlObj?.color, fontWeight: 700, marginLeft: 4 }}>
-                      {lvlObj?.code} {lvlObj?.name}
-                    </span>
-                  </small>
+        <div className="master-list" style={{ maxHeight: '520px', overflowY: 'auto' }}>
+          {paginatedQuestions.length === 0 ? (
+            <p className="muted p-4">No questions found matching criteria.</p>
+          ) : (
+            paginatedQuestions.map(question => {
+              const lvlObj = data.levels.find(l => l.id === question.levelId);
+              return (
+                <div className="question-row" key={question.id}>
+                  <span className="q-number">{question.id.replace('q-', '#')}</span>
+                  <div>
+                    <strong>{question.text}</strong>
+                    <small>
+                      {question.subjectId.toUpperCase()} · {question.standardId.toUpperCase()} ·
+                      <span style={{ color: lvlObj?.color, fontWeight: 700, marginLeft: 4 }}>
+                        {lvlObj?.code} {lvlObj?.name}
+                      </span>
+                    </small>
+                  </div>
+                  <span className="tag success">Print ready</span>
+                  <button className="link-button" onClick={() => setSelectedQuestion(question)}>
+                    Review <ArrowRight size={13} />
+                  </button>
                 </div>
-                <span className="tag success">Print ready</span>
-                <button className="link-button" onClick={() => setSelectedQuestion(question)}>
-                  Review <ArrowRight size={13} />
-                </button>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
+        </div>
+
+        {/* Pagination Toolbar */}
+        <div className="table-pagination-bar">
+          <div className="table-pagination-info">
+            <span>
+              Showing {filtered.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}
+              {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} questions
+            </span>
+            <div className="page-size-selector">
+              <label>Per page:</label>
+              <select
+                value={pageSize}
+                onChange={e => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="table-pagination-actions">
+            <button
+              className="pagination-btn"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            >
+              Previous
+            </button>
+            <span className="pagination-page-num">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className="pagination-btn"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 
@@ -361,20 +423,88 @@ export function Questions({ data }: { data: SeedData }) {
 
 // ── Knowledge Graph View ────────────────────────────────────────────────────
 export function KnowledgeGraph({ data }: { data: SeedData }) {
-  const [selectedComp, setSelectedComp] = useState<Competency>(data.competencies[0]);
+  const navigate = useNavigate();
+  const [selectedComp, setSelectedComp] = useState<Competency>(data.competencies[0] || {
+    id: 'comp-1', standardId: 'std-6', subjectId: 'mat', domain: 'Number System',
+    title: 'Place Value & Operations', outcome: 'Understanding place value and basic arithmetic.',
+    levelId: 'l1', teachingActivity: 'Use concrete counting objects.'
+  });
   const [studyModalOpen, setStudyModalOpen] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
+  // Form State for Updating Knowledge Graph
+  const [newStandardId, setNewStandardId] = useState<string>('std-6');
+  const [newCompSubjectId, setNewCompSubjectId] = useState<string>('mat');
+  const [newDomain, setNewDomain] = useState<string>('');
+  const [newCompTitle, setNewCompTitle] = useState<string>('');
+  const [newCompOutcome, setNewCompOutcome] = useState<string>('');
+  const [newCompLevelId, setNewCompLevelId] = useState<string>('l3');
+  const [newTeachingActivity, setNewTeachingActivity] = useState<string>('');
+  const [toastMsg, setToastMsg] = useState('');
+
+  const availableSubjectIdsForStandard = CLASS_SUBJECT_MAP[newStandardId] || ['hin', 'eng', 'mat', 'sci'];
+  const availableSubjectsForStandard = data.subjects.filter(s => availableSubjectIdsForStandard.includes(s.id));
+
+  const handleSaveCompetency = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCompTitle || !newDomain || !newCompOutcome) return;
+
+    const newComp: Competency = {
+      id: `comp-user-${Date.now()}`,
+      standardId: newStandardId,
+      subjectId: newCompSubjectId,
+      domain: newDomain.trim(),
+      title: newCompTitle.trim(),
+      outcome: newCompOutcome.trim(),
+      levelId: newCompLevelId,
+      teachingActivity: newTeachingActivity.trim() || 'Conduct small group practice activities.',
+    };
+
+    await saveKGEdit({
+      id: `edit-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      type: 'ADD_COMPETENCY',
+      payload: newComp as any,
+    });
+
+    data.competencies.push(newComp);
+    setSelectedComp(newComp);
+    setToastMsg(`Knowledge Graph Updated! Added node: "${newCompTitle}"`);
+    setShowUpdateModal(false);
+    setNewCompTitle('');
+    setNewCompOutcome('');
+    setNewDomain('');
+    setNewTeachingActivity('');
+
+    setTimeout(() => setToastMsg(''), 3500);
+  };
 
   return (
     <>
+      {toastMsg && (
+        <div className="floating-toast animate-fade-in">
+          <CheckCircle2 size={18} className="text-green" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
       <div className="page-header space-between">
         <div>
           <p className="eyebrow">Relationships · Explainable by Design</p>
           <h1>Curriculum Knowledge Graph</h1>
           <p className="muted">Explore how curriculum nodes connect evidence directly to next-day remedial resources.</p>
         </div>
-        <button className="secondary" onClick={() => setStudyModalOpen(true)}>
-          <Sparkles size={16} /> Open Study Materials Guide
-        </button>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button className="primary" onClick={() => setShowUpdateModal(true)}>
+            <Plus size={16} /> Update Knowledge Graph
+          </button>
+          <button className="secondary" onClick={() => navigate('/teacher/knowledge-graph')}>
+            <Network size={16} /> Open Explorer & Editor
+          </button>
+          <button className="secondary" onClick={() => setStudyModalOpen(true)}>
+            <Sparkles size={16} /> Study Materials Guide
+          </button>
+        </div>
       </div>
 
       <div className="graph-layout">
@@ -392,11 +522,11 @@ export function KnowledgeGraph({ data }: { data: SeedData }) {
             <div className="graph-branches">
               <div>
                 <div className="connector horizontal" />
-                <div className="graph-node academic">Multi-Grade Classes<br /><small>Grades 1–8</small></div>
+                <div className="graph-node academic">Classes 6–12<br /><small>Classes 6–12</small></div>
                 <div className="connector vertical" />
                 <div className="graph-node subject">{data.subjects[0].name}<br /><small>Subject</small></div>
                 <div className="connector vertical" />
-                <div className="graph-node domain">Number System & Operations<br /><small>Domain</small></div>
+                <div className="graph-node domain">{selectedComp.domain}<br /><small>Domain</small></div>
                 <div className="connector vertical" />
                 <div className="graph-node competency">{selectedComp.title}<br /><small>Competency</small></div>
               </div>
@@ -438,6 +568,120 @@ export function KnowledgeGraph({ data }: { data: SeedData }) {
         initialLevelId={selectedComp.levelId}
         initialSubjectId={selectedComp.subjectId}
       />
+
+      {/* Update Knowledge Graph Modal */}
+      {showUpdateModal && (
+        <div className="modal-overlay" onClick={() => setShowUpdateModal(false)}>
+          <div className="modal-content animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="modal-header space-between">
+              <h3><Sparkles size={18} className="text-teal" /> Update Knowledge Graph Node</h3>
+              <button className="icon-button" onClick={() => setShowUpdateModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCompetency}>
+              <div className="form-row-2">
+                <div className="form-group">
+                  <label>Target Class / Standard</label>
+                  <select
+                    value={newStandardId}
+                    onChange={e => {
+                      const std = e.target.value;
+                      setNewStandardId(std);
+                      const validSubs = CLASS_SUBJECT_MAP[std] || ['hin', 'eng', 'mat', 'sci'];
+                      if (!validSubs.includes(newCompSubjectId)) {
+                        setNewCompSubjectId(validSubs[0]);
+                      }
+                    }}
+                  >
+                    {Object.entries(CLASS_LABELS).map(([id, label]) => (
+                      <option key={id} value={id}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Subject (Class-Based)</label>
+                  <select
+                    value={newCompSubjectId}
+                    onChange={e => setNewCompSubjectId(e.target.value)}
+                  >
+                    {availableSubjectsForStandard.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Curriculum Domain</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Number System, Optics, Cell Biology, Algebra..."
+                  value={newDomain}
+                  onChange={e => setNewDomain(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Competency / Skill Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Solve linear equations with two variables"
+                  value={newCompTitle}
+                  onChange={e => setNewCompTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Learning Outcome Description</label>
+                <textarea
+                  rows={2}
+                  required
+                  placeholder="Describe what students will master through this node..."
+                  value={newCompOutcome}
+                  onChange={e => setNewCompOutcome(e.target.value)}
+                />
+              </div>
+
+              <div className="form-row-2">
+                <div className="form-group">
+                  <label>Target Difficulty Level</label>
+                  <select value={newCompLevelId} onChange={e => setNewCompLevelId(e.target.value)}>
+                    {data.levels.map(l => (
+                      <option key={l.id} value={l.id}>
+                        {l.code} - {getLevelLabel(newCompSubjectId, l.id)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Next-Day Remedial Teaching Action</label>
+                  <input
+                    type="text"
+                    placeholder="Actionable remedial activity for low performers"
+                    value={newTeachingActivity}
+                    onChange={e => setNewTeachingActivity(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="secondary" onClick={() => setShowUpdateModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary">
+                  <Save size={16} /> Save Node to Knowledge Graph
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -614,18 +858,44 @@ export function SyncQueue({ data }: { data: SeedData }) {
 // ── My Classes & Monthwise Reports View ─────────────────────────────────────
 export function Classes({ data }: { data: SeedData }) {
   const navigate = useNavigate();
-  const [selectedClassId, setSelectedClassId] = useState<string>(data.classrooms[0]?.id || 'class-multigrade-1');
-  const [selectedMonth, setSelectedMonth] = useState<string>('September 2026');
+  const [selectedClassId, setSelectedClassId] = useState<string>(data.classrooms[0]?.id || 'class-6-a');
+  const [selectedMonthName, setSelectedMonthName] = useState<string>('September');
+  const [selectedYear, setSelectedYear] = useState<string>('2026');
+  const selectedMonth = `${selectedMonthName} ${selectedYear}`;
   const [studyModalOpen, setStudyModalOpen] = useState<boolean>(false);
   const [activeStudyLevel, setActiveStudyLevel] = useState<string>('l3');
   const [selectedStudentForCard, setSelectedStudentForCard] = useState<Student | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
   const currentClass = data.classrooms.find(c => c.id === selectedClassId) || data.classrooms[0];
-  const classStudents = data.students.filter(s => s.classId === selectedClassId);
+  
+  const allClassStudents = data.students.filter(s => s.classId === selectedClassId);
+  
+  const filteredClassStudents = React.useMemo(() => {
+    if (!searchQuery) return allClassStudents;
+    return allClassStudents.filter(s =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.parentName && s.parentName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      s.rollNumber.toString().includes(searchQuery)
+    );
+  }, [allClassStudents, searchQuery]);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedClassId, searchQuery, selectedMonth]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredClassStudents.length / pageSize));
+  const paginatedClassStudents = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredClassStudents.slice(start, start + pageSize);
+  }, [filteredClassStudents, currentPage, pageSize]);
 
   // Group counts for L1 to L5
   const levelCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  classStudents.forEach(s => {
+  allClassStudents.forEach(s => {
     const lvlNum = s.monthwiseLevels?.[selectedMonth] || (s.currentLevelId ? parseInt(s.currentLevelId.replace('l', ''), 10) : 3);
     levelCounts[lvlNum] = (levelCounts[lvlNum] || 0) + 1;
   });
@@ -679,11 +949,11 @@ export function Classes({ data }: { data: SeedData }) {
       <div className="stat-grid">
         <div className="stat-card">
           <div className="stat-icon blue"><User size={18} /></div>
-          <div><strong>{classStudents.length}</strong><span>Students in Room</span><small>{currentClass?.name}</small></div>
+          <div><strong>{allClassStudents.length}</strong><span>Students in Room</span><small>{currentClass?.name}</small></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon green"><CheckCircle2 size={18} /></div>
-          <div><strong>{classStudents.length}</strong><span>Assessed ({selectedMonth.split(' ')[0]})</span><small>100% evaluated</small></div>
+          <div><strong>{allClassStudents.length}</strong><span>Assessed ({selectedMonth.split(' ')[0]})</span><small>100% evaluated</small></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon orange"><Sparkles size={18} /></div>
@@ -691,7 +961,7 @@ export function Classes({ data }: { data: SeedData }) {
         </div>
         <div className="stat-card">
           <div className="stat-icon purple"><ShieldCheck size={18} /></div>
-          <div><strong>{classStudents.length}</strong><span>Parent Cards Ready</span><small>Ready to print</small></div>
+          <div><strong>{allClassStudents.length}</strong><span>Parent Cards Ready</span><small>Ready to print</small></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon teal"><Calendar size={18} /></div>
@@ -706,12 +976,17 @@ export function Classes({ data }: { data: SeedData }) {
             <h3>Learning Groups & Next-Day Teaching Plan ({currentClass?.name})</h3>
             <p className="muted">Tap any group to view student roster and open targeted remedial worksheets.</p>
           </div>
-          <div className="month-selector-inline">
-            <label>Month:</label>
-            <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}>
-              <option value="September 2026">September 2026</option>
-              <option value="August 2026">August 2026</option>
-              <option value="July 2026">July 2026</option>
+          <div className="month-selector-inline" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <label>Cycle:</label>
+            <select value={selectedMonthName} onChange={e => setSelectedMonthName(e.target.value)}>
+              {MONTHS_LIST.map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
+              {YEARS_LIST.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -751,9 +1026,13 @@ export function Classes({ data }: { data: SeedData }) {
       {/* Student List with Prominent Clickable Level Flags */}
       <div className="panel list-panel">
         <div className="list-toolbar space-between">
-          <div>
-            <h3 style={{ margin: 0 }}>Student Roster & Monthly Assessment Flag ({selectedMonth})</h3>
-            <small className="muted">Click any Level Flag to redirect to targeted study materials.</small>
+          <div className="search">
+            <input
+              type="text"
+              placeholder="Search student by name or roll..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
           </div>
           <div className="action-buttons-row">
             <button className="secondary small" onClick={() => navigate('/teacher/student-register')}>
@@ -779,66 +1058,116 @@ export function Classes({ data }: { data: SeedData }) {
               </tr>
             </thead>
             <tbody>
-              {classStudents.map(student => {
-                const lvlNum = student.monthwiseLevels?.[selectedMonth] || (student.currentLevelId ? parseInt(student.currentLevelId.replace('l', ''), 10) : 3);
-                const levelObj = data.levels[lvlNum - 1] || data.levels[2];
+              {paginatedClassStudents.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="empty-table-cell">No students found matching search.</td>
+                </tr>
+              ) : (
+                paginatedClassStudents.map(student => {
+                  const lvlNum = student.monthwiseLevels?.[selectedMonth] || (student.currentLevelId ? parseInt(student.currentLevelId.replace('l', ''), 10) : 3);
+                  const levelObj = data.levels[lvlNum - 1] || data.levels[2];
 
-                return (
-                  <tr key={student.id}>
-                    <td>
-                      <span className="roll-badge">#{student.rollNumber}</span>
-                    </td>
-                    <td>
-                      <div className="student-name-cell">
-                        <strong>{student.name}</strong>
-                        <small className="muted">{student.gender || 'Student'} · {student.admission}</small>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="class-tag">{student.gradeLevel || 'Grade 3'}</span>
-                    </td>
-                    <td>
-                      <div className="contact-cell">
-                        <strong>{student.parentName || 'Parent'}</strong>
-                        {student.parentPhone && <small className="muted">{student.parentPhone}</small>}
-                      </div>
-                    </td>
-                    <td>
-                      {/* PROMINENT CLICKABLE LEVEL FLAG REDIRECTING TO STUDY MATERIAL */}
-                      <button
-                        className="level-flag-btn"
-                        style={{
-                          backgroundColor: levelObj.color,
-                          color: '#fff',
-                          borderColor: levelObj.color,
-                        }}
-                        title={`Click to open ${levelObj.name} remedial worksheets and teaching guides`}
-                        onClick={() => openStudyMaterial(levelObj.id, student)}
-                      >
-                        <span className="flag-icon">{levelObj.icon}</span>
-                        <span className="flag-code">{levelObj.code}</span>
-                        <span className="flag-name">{levelObj.name.split('/')[0]}</span>
-                        <Sparkles size={12} className="flag-sparkle" />
-                      </button>
-                    </td>
-                    <td>
-                      <span className={`trend-pill ${student.trend === 'Improving' ? 'trend-green' : student.trend === 'Review required' ? 'trend-orange' : 'trend-blue'}`}>
-                        {student.trend}
-                      </span>
-                    </td>
-                    <td className="text-right">
-                      <button
-                        className="small-button secondary highlight-teal"
-                        onClick={() => setSelectedStudentForCard(student)}
-                      >
-                        <Eye size={13} /> View Card
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr key={student.id}>
+                      <td>
+                        <span className="roll-badge">#{student.rollNumber}</span>
+                      </td>
+                      <td>
+                        <div className="student-name-cell">
+                          <strong>{student.name}</strong>
+                          <small className="muted">{student.gender || 'Student'} · {student.admission}</small>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="class-tag">{student.gradeLevel || 'Grade 3'}</span>
+                      </td>
+                      <td>
+                        <div className="contact-cell">
+                          <strong>{student.parentName || 'Parent'}</strong>
+                          {student.parentPhone && <small className="muted">{student.parentPhone}</small>}
+                        </div>
+                      </td>
+                      <td>
+                        {/* PROMINENT CLICKABLE LEVEL FLAG REDIRECTING TO STUDY MATERIAL */}
+                        <button
+                          className="level-flag-btn"
+                          style={{
+                            backgroundColor: levelObj.color,
+                            color: '#fff',
+                            borderColor: levelObj.color,
+                          }}
+                          title={`Click to open ${levelObj.name} remedial worksheets and teaching guides`}
+                          onClick={() => openStudyMaterial(levelObj.id, student)}
+                        >
+                          <span className="flag-icon">{levelObj.icon}</span>
+                          <span className="flag-code">{levelObj.code}</span>
+                          <span className="flag-name">{levelObj.name.split('/')[0]}</span>
+                          <Sparkles size={12} className="flag-sparkle" />
+                        </button>
+                      </td>
+                      <td>
+                        <span className={`trend-pill ${student.trend === 'Improving' ? 'trend-green' : student.trend === 'Review required' ? 'trend-orange' : 'trend-blue'}`}>
+                          {student.trend}
+                        </span>
+                      </td>
+                      <td className="text-right">
+                        <button
+                          className="small-button secondary highlight-teal"
+                          onClick={() => setSelectedStudentForCard(student)}
+                        >
+                          <Eye size={13} /> View Card
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Toolbar */}
+        <div className="table-pagination-bar">
+          <div className="table-pagination-info">
+            <span>
+              Showing {filteredClassStudents.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}
+              {Math.min(currentPage * pageSize, filteredClassStudents.length)} of {filteredClassStudents.length} students
+            </span>
+            <div className="page-size-selector">
+              <label>Per page:</label>
+              <select
+                value={pageSize}
+                onChange={e => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="table-pagination-actions">
+            <button
+              className="pagination-btn"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            >
+              Previous
+            </button>
+            <span className="pagination-page-num">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className="pagination-btn"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 

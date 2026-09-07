@@ -672,3 +672,23 @@ select{text-overflow:ellipsis}
   .student-row .link-button{grid-area:action;justify-self:end}
   .student-row strong,.student-row small{white-space:normal}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Assessment History width.
+   .history-grid is declared `1fr 340px`, but its second child — the session
+   detail panel — only renders once a session is selected. With nothing
+   selected (the default) the track still existed, so the paper list was
+   squeezed into 914px and 360px sat empty to its right.
+
+   Reserve the side column only when the panel is actually present. Where
+   :has() is unsupported the grid stays single-column and the panel simply
+   stacks underneath, which is a sound fallback.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.history-grid{grid-template-columns:minmax(0,1fr)}
+.history-grid:has(.session-detail-panel){
+  grid-template-columns:minmax(0,1fr) 340px;
+}
+@media(max-width:1050px){
+  .history-grid:has(.session-detail-panel){grid-template-columns:minmax(0,1fr)}
+}

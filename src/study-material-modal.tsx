@@ -152,13 +152,13 @@ export function StudyMaterialModal({
         </div>
 
         {/* Level Switcher Ribbon */}
-        <div className="level-switch-ribbon">
+        <div className="level-switch-ribbon pt-8">
           <span className="ribbon-label">Level:</span>
           <div className="level-buttons-row">
             {data.levels.map(lvl => (
               <button
                 key={lvl.id}
-                className={`level-btn-pill ${selectedLevelId === lvl.id ? 'active' : ''}`}
+                className={`level-btn-pill pt-8 ${selectedLevelId === lvl.id ? 'active' : ''}`}
                 style={{
                   borderColor: lvl.color,
                   backgroundColor: selectedLevelId === lvl.id ? lvl.color : 'transparent',

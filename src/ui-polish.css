@@ -441,19 +441,19 @@ html{-webkit-text-size-adjust:100%}
 
 /* Rows of chips/tabs scroll sideways instead of forcing the page to. */
 .tabs,.stepper,.subject-tabs-row,.study-modal-tabs,
-.subject-pills-row,.classrooms-ribbon,.level-switch-ribbon{
+.subject-pills-row,.classrooms-ribbon,.level-switch-ribbon,.level-buttons-row{
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:thin;
 }
 .tabs::-webkit-scrollbar,.stepper::-webkit-scrollbar,
 .subject-tabs-row::-webkit-scrollbar,.study-modal-tabs::-webkit-scrollbar,
-.classrooms-ribbon::-webkit-scrollbar{height:4px}
+.classrooms-ribbon::-webkit-scrollbar,.level-buttons-row::-webkit-scrollbar{height:4px}
 .tabs::-webkit-scrollbar-thumb,.stepper::-webkit-scrollbar-thumb,
 .subject-tabs-row::-webkit-scrollbar-thumb,.study-modal-tabs::-webkit-scrollbar-thumb,
-.classrooms-ribbon::-webkit-scrollbar-thumb{background:#cfdcd8;border-radius:4px}
+.classrooms-ribbon::-webkit-scrollbar-thumb,.level-buttons-row::-webkit-scrollbar-thumb{background:#cfdcd8;border-radius:4px}
 .tabs>*,.stepper>*,.subject-tabs-row>*,.study-modal-tabs>*,
-.subject-pills-row>*,.classrooms-ribbon>*{flex:0 0 auto}
+.subject-pills-row>*,.classrooms-ribbon>*,.level-buttons-row>*{flex:0 0 auto}
 
 /* A flex/grid child defaults to min-width:auto, so its content can still
    force the page wider even with overflow-x set. These need min-width:0

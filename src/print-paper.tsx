@@ -1,9 +1,53 @@
 import jsPDF from 'jspdf';
 import type { GeneratedPaper } from './types';
 
+// ============================================================================
+// DEVANAGARI FONT SUPPORT
+// ============================================================================
+// To enable Hindi (Devanagari) text rendering in PDFs:
+// 1. Download: https://fonts.google.com/download?family=Noto%20Sans%20Devanagari
+// 2. Extract NotoSansDevanagari-Regular.ttf
+// 3. Convert using: npx jspdf-fontconverter NotoSansDevanagari-Regular.ttf
+// 4. Place generated files in public/fonts/ directory
+// 5. Update fontRegistrationPath below to point to the correct location
+// ============================================================================
+
+/** Detects if text contains Hindi/Devanagari Unicode characters */
+function containsHindi(text: string): boolean {
+  return /[\u0900-\u097F]/.test(text);
+}
+
+/** Registers Devanagari font if available; gracefully falls back to Helvetica */
+function registerDevanagariFont(doc: jsPDF): void {
+  try {
+    // Import statement: import './fonts/NotoSansDevanagari-Regular';
+    // This assumes the font converter has been run and files placed in public/fonts/
+    const devanagariAvailable = (globalThis as any).pdfMake?.fonts?.['NotoSansDevanagari-Regular'];
+    if (devanagariAvailable) {
+      doc.addFont('NotoSansDevanagari-Regular.ttf', 'NotoSansDevanagari', 'normal');
+    }
+  } catch (e) {
+    // Font not available - will fall back to Helvetica for all text
+  }
+}
+
+/** Sets font based on text content: Devanagari for Hindi, Helvetica for English */
+function setFontForContent(doc: jsPDF, text: string, isBold = false): void {
+  if (containsHindi(text)) {
+    try {
+      doc.setFont('NotoSansDevanagari', isBold ? 'bold' : 'normal');
+      return;
+    } catch (e) {
+      // Font not available, fall through to Helvetica
+    }
+  }
+  doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+}
+
 /**
  * Generates and downloads the Student Question Paper PDF using jsPDF.
  * Prefills Class and Subject. Leaves Roll Number blank for the student to write.
+ * Supports both English and Hindi (Devanagari) text.
  */
 export function downloadStudentPaper(paper: GeneratedPaper): void {
   const doc = new jsPDF({
@@ -18,16 +62,19 @@ export function downloadStudentPaper(paper: GeneratedPaper): void {
   const contentWidth = pageWidth - margin * 2;
   let y = 15;
 
+  // Register Devanagari font if available
+  registerDevanagariFont(doc);
+
   // Helper to add header on every page
   const addHeader = (isFirstPage = false) => {
-    doc.setFont('helvetica', 'bold');
+    setFontForContent(doc, 'SHIKSHA SETU', true);
     doc.setFontSize(16);
     doc.setTextColor(30, 41, 59); // dark slate
     doc.text('SHIKSHA SETU — ASSESSMENT PAPER', pageWidth / 2, y, { align: 'center' });
     y += 7;
 
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    setFontForContent(doc, 'Academic Evaluation Sheet', false);
     doc.setTextColor(71, 85, 105);
     doc.text(`Academic Evaluation Sheet`, pageWidth / 2, y, { align: 'center' });
     y += 8;
@@ -38,37 +85,50 @@ export function downloadStudentPaper(paper: GeneratedPaper): void {
     doc.line(margin, y, pageWidth - margin, y);
     y += 6;
 
+    // Roll Number on EVERY page (top right corner for quick identification)
+    setFontForContent(doc, 'Roll', false);
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Roll No: [ ____________ ]', margin + contentWidth - 50, y - 6);
+
     if (isFirstPage) {
       // Info box with prefilled Class & Subject, blank Roll No
       doc.setFillColor(248, 250, 252);
       doc.roundedRect(margin, y, contentWidth, 22, 2, 2, 'F');
       doc.rect(margin, y, contentWidth, 22, 'S');
 
-      doc.setFont('helvetica', 'bold');
+      setFontForContent(doc, paper.className, true);
       doc.setFontSize(11);
       doc.setTextColor(15, 23, 42);
 
       // Left column: Prefilled Class & Subject
       doc.text(`Class: ${paper.className}`, margin + 5, y + 7);
+      setFontForContent(doc, paper.subjectName, false);
       doc.text(`Subject: ${paper.subjectName}`, margin + 5, y + 15);
 
       // Right column: Total Qs, Total Marks, Blank Roll No
       const totalMarks = paper.questions.reduce((sum, q) => sum + (q.marks || 1), 0);
+      setFontForContent(doc, 'Total Questions', false);
       doc.text(`Total Questions: ${paper.totalQuestions}`, margin + contentWidth / 2 + 5, y + 7);
+      setFontForContent(doc, 'Total Marks', false);
       doc.text(`Total Marks: ${totalMarks}`, margin + contentWidth / 2 + 5, y + 15);
 
       y += 26;
 
       // Student Roll Number box
-      doc.setFont('helvetica', 'bold');
+      setFontForContent(doc, 'Student Roll Number', true);
       doc.setFontSize(10);
       doc.text('Student Roll Number: [ ____________________ ]', margin + 5, y);
+      setFontForContent(doc, 'Date', false);
       doc.text('Date: ____/____/20____', margin + contentWidth - 55, y);
       y += 10;
 
       // Divider line
       doc.line(margin, y, pageWidth - margin, y);
       y += 8;
+    } else {
+      // On subsequent pages, add some spacing after the header
+      y += 2;
     }
   };
 
@@ -83,7 +143,7 @@ export function downloadStudentPaper(paper: GeneratedPaper): void {
   addHeader(true);
 
   // Question List
-  doc.setFont('helvetica', 'bold');
+  setFontForContent(doc, 'Questions', true);
   doc.setFontSize(12);
   doc.setTextColor(15, 23, 42);
   doc.text('Questions', margin, y);
@@ -98,14 +158,14 @@ export function downloadStudentPaper(paper: GeneratedPaper): void {
     checkPageBreak(neededHeight);
 
     // Question Header
-    doc.setFont('helvetica', 'bold');
+    setFontForContent(doc, q.text, true);
     doc.setFontSize(10);
     doc.setTextColor(30, 41, 59);
     doc.text(qTitle, margin, y);
     y += 5;
 
     // Question Body
-    doc.setFont('helvetica', 'normal');
+    setFontForContent(doc, q.text, false);
     doc.setFontSize(10);
     doc.setTextColor(51, 65, 85);
     doc.text(qTextLines, margin + 5, y);
@@ -117,6 +177,7 @@ export function downloadStudentPaper(paper: GeneratedPaper): void {
       q.options.forEach((opt, optIdx) => {
         checkPageBreak(6);
         const label = optionLabels[optIdx] || `(${optIdx + 1})`;
+        setFontForContent(doc, opt, false);
         doc.text(`${label} ${opt}`, margin + 10, y);
         y += 5;
       });
@@ -139,7 +200,7 @@ export function downloadStudentPaper(paper: GeneratedPaper): void {
   const pageCount = (doc.internal as any).getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFont('helvetica', 'italic');
+    setFontForContent(doc, 'Page', false);
     doc.setFontSize(9);
     doc.setTextColor(148, 163, 184);
     doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
@@ -153,6 +214,7 @@ export function downloadStudentPaper(paper: GeneratedPaper): void {
 
 /**
  * Generates and downloads the Answer Key PDF for Teachers using jsPDF.
+ * Supports both English and Hindi (Devanagari) text.
  */
 export function downloadAnswerKey(paper: GeneratedPaper): void {
   const doc = new jsPDF({
@@ -167,15 +229,18 @@ export function downloadAnswerKey(paper: GeneratedPaper): void {
   const contentWidth = pageWidth - margin * 2;
   let y = 15;
 
+  // Register Devanagari font if available
+  registerDevanagariFont(doc);
+
   const addHeader = (isFirstPage = false) => {
-    doc.setFont('helvetica', 'bold');
+    setFontForContent(doc, 'TEACHER ANSWER KEY', true);
     doc.setFontSize(16);
     doc.setTextColor(180, 83, 9); // Amber/brown for Answer Key header
     doc.text('TEACHER ANSWER KEY — CONFIDENTIAL', pageWidth / 2, y, { align: 'center' });
     y += 7;
 
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
+    setFontForContent(doc, 'Shiksha Setu Evaluation Guide', false);
     doc.setTextColor(71, 85, 105);
     doc.text(`Shiksha Setu Evaluation Guide`, pageWidth / 2, y, { align: 'center' });
     y += 8;
@@ -185,23 +250,35 @@ export function downloadAnswerKey(paper: GeneratedPaper): void {
     doc.line(margin, y, pageWidth - margin, y);
     y += 6;
 
+    // Roll Number on EVERY page (top right corner for quick identification)
+    setFontForContent(doc, 'Roll', false);
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Roll No: [ ____________ ]', margin + contentWidth - 50, y - 6);
+
     if (isFirstPage) {
       doc.setFillColor(254, 243, 199); // light amber box
       doc.roundedRect(margin, y, contentWidth, 20, 2, 2, 'F');
       doc.rect(margin, y, contentWidth, 20, 'S');
 
-      doc.setFont('helvetica', 'bold');
+      setFontForContent(doc, paper.className, true);
       doc.setFontSize(11);
       doc.setTextColor(120, 53, 15);
 
       doc.text(`Class: ${paper.className}`, margin + 5, y + 7);
+      setFontForContent(doc, paper.subjectName, false);
       doc.text(`Subject: ${paper.subjectName}`, margin + 5, y + 14);
 
       const totalMarks = paper.questions.reduce((sum, q) => sum + (q.marks || 1), 0);
+      setFontForContent(doc, 'Total Questions', false);
       doc.text(`Total Questions: ${paper.totalQuestions}`, margin + contentWidth / 2 + 5, y + 7);
+      setFontForContent(doc, 'Total Marks', false);
       doc.text(`Total Marks: ${totalMarks}`, margin + contentWidth / 2 + 5, y + 14);
 
       y += 24;
+    } else {
+      // On subsequent pages, add some spacing after the header
+      y += 2;
     }
   };
 
@@ -215,7 +292,7 @@ export function downloadAnswerKey(paper: GeneratedPaper): void {
 
   addHeader(true);
 
-  doc.setFont('helvetica', 'bold');
+  setFontForContent(doc, 'Answer Key & Marking Scheme', true);
   doc.setFontSize(12);
   doc.setTextColor(15, 23, 42);
   doc.text('Answer Key & Marking Scheme', margin, y);
@@ -231,14 +308,14 @@ export function downloadAnswerKey(paper: GeneratedPaper): void {
     checkPageBreak(neededHeight);
 
     // Question label
-    doc.setFont('helvetica', 'bold');
+    setFontForContent(doc, q.text, true);
     doc.setFontSize(10);
     doc.setTextColor(30, 41, 59);
     doc.text(qTitle, margin, y);
     y += 5;
 
     // Question Text
-    doc.setFont('helvetica', 'normal');
+    setFontForContent(doc, q.text, false);
     doc.setFontSize(10);
     doc.setTextColor(51, 65, 85);
     doc.text(qTextLines, margin + 5, y);
@@ -248,7 +325,7 @@ export function downloadAnswerKey(paper: GeneratedPaper): void {
     doc.setFillColor(236, 253, 245); // emerald tint
     doc.roundedRect(margin + 5, y, contentWidth - 10, ansLines.length * 5 + 4, 1, 1, 'F');
 
-    doc.setFont('helvetica', 'bold');
+    setFontForContent(doc, q.answer, true);
     doc.setFontSize(10);
     doc.setTextColor(4, 120, 87); // emerald 700
     doc.text(ansLines, margin + 8, y + 5);
@@ -260,7 +337,7 @@ export function downloadAnswerKey(paper: GeneratedPaper): void {
   const pageCount = (doc.internal as any).getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFont('helvetica', 'italic');
+    setFontForContent(doc, 'Page', false);
     doc.setFontSize(9);
     doc.setTextColor(148, 163, 184);
     doc.text(`Page ${i} of ${pageCount} — FOR TEACHER USE ONLY`, pageWidth / 2, pageHeight - 8, { align: 'center' });

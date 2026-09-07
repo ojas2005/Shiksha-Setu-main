@@ -203,23 +203,6 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
   };
 
   // Sample CSV generator for instant demo
-  const handleLoadSampleCSV = () => {
-    const sampleRows = [
-      'Roll Number, Student Name, Date of Assessment, L1 Mark, L2 Mark, L3 Mark, L4 Mark, L5 Mark, Final Level, Remarks',
-      '1, Anita Devi, 2026-09-05, 1, 1, 0, 0, 0, 2, Emerging word reader',
-      '2, Sohan Lal, 2026-09-05, 1, 1, 2, 0, 0, 3, Consistent word building',
-      '3, Pooja Kumari, 2026-09-05, 1, 1, 2, 2, 0, 4, Proficient sentence reading',
-      '4, Amit Kumar, 2026-09-05, 1, 0, 0, 0, 0, 1, Requires concrete foundation pack',
-      '5, Meera Joshi, 2026-09-05, 1, 1, 2, 2, 3, 5, Grade-level mastery achieved',
-      '6, Kabir Singh, 2026-09-05, 1, 1, 2, 0, 0, 3, Developing paragraph reader',
-      '7, Priya Verma, 2026-09-05, 1, 1, 0, 0, 0, 2, Practicing vowel sounds',
-      '14, Rekha Kumari, 2026-09-05, 1, 1, 2, 2, 0, 4, Sentence fluency checked',
-    ];
-    const csvText = sampleRows.join('\n');
-    setRawCsvInput(csvText);
-    processCSV(csvText);
-  };
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -465,7 +448,7 @@ IMPORTANT:
 
             <div className="form-group">
               <label>Assessment Month & Year</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div className="field-split">
                 <select value={selectedMonthName} onChange={e => setSelectedMonthName(e.target.value)}>
                   {MONTHS_LIST.map(m => (
                     <option key={m} value={m}>{m}</option>
@@ -765,9 +748,6 @@ IMPORTANT:
             <div className="action-buttons-row">
               <button className="secondary" onClick={handleDownloadCSVTemplate}>
                 <FileSpreadsheet size={16} /> Download CSV Template
-              </button>
-              <button className="secondary highlight-blue" onClick={handleLoadSampleCSV}>
-                <Sparkles size={16} /> Load Sample Result CSV
               </button>
             </div>
           </div>

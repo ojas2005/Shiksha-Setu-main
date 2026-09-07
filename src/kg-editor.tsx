@@ -3,8 +3,9 @@ import {
   Network, Plus, Edit2, Trash2, CheckCircle2, ChevronRight,
   ChevronDown, BookOpen, Layers, HelpCircle, Save, X, Sparkles
 } from 'lucide-react';
-import type { SeedData, Question, QuestionKind } from './types';
+import type { SeedData, Question, QuestionKind, Competency } from './types';
 import { EducationGraph, getGraphStats } from './knowledge-graph';
+import { getLevelLabel, CLASS_SUBJECT_MAP, CLASS_LABELS } from './data';
 import { saveKGEdit } from './db';
 
 interface KGEditorProps {
@@ -18,6 +19,16 @@ export function KGEditor({ data, graph }: KGEditorProps) {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('mat');
   const [expandedDomains, setExpandedDomains] = useState<Record<string, boolean>>({ 'Number System': true, 'Fractions & Decimals': true });
   const [expandedCompetencies, setExpandedCompetencies] = useState<Record<string, boolean>>({});
+
+  // Top-Level Update Knowledge Graph Modal State (Competency / Node Creation)
+  const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
+  const [newStandardId, setNewStandardId] = useState<string>('std-6');
+  const [newCompSubjectId, setNewCompSubjectId] = useState<string>('mat');
+  const [newDomain, setNewDomain] = useState<string>('');
+  const [newCompTitle, setNewCompTitle] = useState<string>('');
+  const [newCompOutcome, setNewCompOutcome] = useState<string>('');
+  const [newCompLevelId, setNewCompLevelId] = useState<string>('l3');
+  const [newTeachingActivity, setNewTeachingActivity] = useState<string>('');
 
   // Add Question Modal State
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -49,6 +60,42 @@ export function KGEditor({ data, graph }: KGEditorProps) {
   const handleOpenAddModal = (compId: string) => {
     setTargetCompId(compId);
     setShowAddModal(true);
+  };
+
+  const handleSaveCompetency = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCompTitle || !newDomain || !newCompOutcome) return;
+
+    const newComp: Competency = {
+      id: `comp-user-${Date.now()}`,
+      standardId: newStandardId,
+      subjectId: newCompSubjectId,
+      domain: newDomain.trim(),
+      title: newCompTitle.trim(),
+      outcome: newCompOutcome.trim(),
+      levelId: newCompLevelId,
+      teachingActivity: newTeachingActivity.trim() || 'Conduct small group practice activities.',
+    };
+
+    // Save edit log in IndexedDB
+    await saveKGEdit({
+      id: `edit-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      type: 'ADD_COMPETENCY',
+      payload: newComp as any,
+    });
+
+    // Update runtime data state
+    data.competencies.push(newComp);
+
+    setSavedFeedback(`Competency "${newCompTitle}" added to Knowledge Graph!`);
+    setShowUpdateModal(false);
+    setNewCompTitle('');
+    setNewCompOutcome('');
+    setNewDomain('');
+    setNewTeachingActivity('');
+
+    setTimeout(() => setSavedFeedback(''), 3500);
   };
 
   const handleSaveQuestion = async (e: React.FormEvent) => {
@@ -94,16 +141,23 @@ export function KGEditor({ data, graph }: KGEditorProps) {
     setTimeout(() => setSavedFeedback(''), 3000);
   };
 
+  // Helper for available subjects in modal based on standard
+  const availableSubjectIdsForStandard = CLASS_SUBJECT_MAP[newStandardId] || ['hin', 'eng', 'mat', 'sci'];
+  const availableSubjectsForStandard = data.subjects.filter(s => availableSubjectIdsForStandard.includes(s.id));
+
   return (
     <div className="kg-editor-page">
-      <div className="page-header">
+      <div className="page-header space-between">
         <div>
           <p className="eyebrow">Knowledge Base · Interactive Graph</p>
           <h1>Knowledge Graph Explorer & Editor</h1>
           <p className="muted">
-            Visualize the curriculum domain hierarchy, view linked competencies and questions, and add custom assessment items.
+            Visualize the curriculum domain hierarchy, view linked competencies and questions, and update the Knowledge Graph.
           </p>
         </div>
+        <button className="primary" onClick={() => setShowUpdateModal(true)}>
+          <Plus size={16} /> Update Knowledge Graph
+        </button>
       </div>
 
       {savedFeedback && (
@@ -282,7 +336,7 @@ export function KGEditor({ data, graph }: KGEditorProps) {
                   <select value={newQLevelId} onChange={e => setNewQLevelId(e.target.value)}>
                     {data.levels.map(l => (
                       <option key={l.id} value={l.id}>
-                        {l.code} - {l.name}
+                        {l.code} - {getLevelLabel(selectedSubjectId, l.id)}
                       </option>
                     ))}
                   </select>
@@ -306,6 +360,120 @@ export function KGEditor({ data, graph }: KGEditorProps) {
                 </button>
                 <button type="submit" className="primary">
                   <Save size={16} /> Save to Knowledge Graph
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Top-Level Update Knowledge Graph Modal */}
+      {showUpdateModal && (
+        <div className="modal-overlay" onClick={() => setShowUpdateModal(false)}>
+          <div className="modal-content animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="modal-header space-between">
+              <h3><Sparkles size={18} className="text-teal" /> Update Knowledge Graph Node</h3>
+              <button className="icon-button" onClick={() => setShowUpdateModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCompetency}>
+              <div className="form-row-2">
+                <div className="form-group">
+                  <label>Target Class / Standard</label>
+                  <select
+                    value={newStandardId}
+                    onChange={e => {
+                      const std = e.target.value;
+                      setNewStandardId(std);
+                      const validSubs = CLASS_SUBJECT_MAP[std] || ['hin', 'eng', 'mat', 'sci'];
+                      if (!validSubs.includes(newCompSubjectId)) {
+                        setNewCompSubjectId(validSubs[0]);
+                      }
+                    }}
+                  >
+                    {Object.entries(CLASS_LABELS).map(([id, label]) => (
+                      <option key={id} value={id}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Subject (Class-Based)</label>
+                  <select
+                    value={newCompSubjectId}
+                    onChange={e => setNewCompSubjectId(e.target.value)}
+                  >
+                    {availableSubjectsForStandard.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Curriculum Domain</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Number System, Optics, Cell Biology, Algebra..."
+                  value={newDomain}
+                  onChange={e => setNewDomain(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Competency / Skill Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Solve linear equations with two variables"
+                  value={newCompTitle}
+                  onChange={e => setNewCompTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Learning Outcome Description</label>
+                <textarea
+                  rows={2}
+                  required
+                  placeholder="Describe what students will master through this node..."
+                  value={newCompOutcome}
+                  onChange={e => setNewCompOutcome(e.target.value)}
+                />
+              </div>
+
+              <div className="form-row-2">
+                <div className="form-group">
+                  <label>Target Difficulty Level</label>
+                  <select value={newCompLevelId} onChange={e => setNewCompLevelId(e.target.value)}>
+                    {data.levels.map(l => (
+                      <option key={l.id} value={l.id}>
+                        {l.code} - {getLevelLabel(newCompSubjectId, l.id)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Next-Day Remedial Teaching Action</label>
+                  <input
+                    type="text"
+                    placeholder="Actionable remedial activity for low performers"
+                    value={newTeachingActivity}
+                    onChange={e => setNewTeachingActivity(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="secondary" onClick={() => setShowUpdateModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="primary">
+                  <Save size={16} /> Save Node to Knowledge Graph
                 </button>
               </div>
             </form>

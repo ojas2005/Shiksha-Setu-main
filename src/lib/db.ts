@@ -1,6 +1,6 @@
 import { seedData } from './data';
 import Dexie, { type Table } from 'dexie';
-import type { SeedData, GeneratedPaper, AssessmentSession, KGEdit, SavedQuestionSet, Student, Classroom } from './types';
+import type { SeedData, GeneratedPaper, AssessmentSession, KGEdit, SavedQuestionSet, Student, Classroom } from '../types';
 
 class ShikshaSetuDatabase extends Dexie {
   payload!: Table<{ id: string; data: SeedData }, string>;

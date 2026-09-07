@@ -3,10 +3,10 @@ import {
   Network, Plus, Edit2, Trash2, CheckCircle2, ChevronRight,
   ChevronDown, BookOpen, Layers, HelpCircle, Save, X, Sparkles
 } from 'lucide-react';
-import type { SeedData, Question, QuestionKind, Competency } from './types';
-import { EducationGraph, getGraphStats } from './knowledge-graph';
-import { getLevelLabel, CLASS_SUBJECT_MAP, CLASS_LABELS } from './data';
-import { saveKGEdit } from './db';
+import type { SeedData, Question, QuestionKind, Competency } from '../types';
+import { EducationGraph, getGraphStats } from '../lib/knowledge-graph';
+import { getLevelLabel, CLASS_SUBJECT_MAP, CLASS_LABELS } from '../lib/data';
+import { saveKGEdit } from '../lib/db';
 
 interface KGEditorProps {
   data: SeedData;

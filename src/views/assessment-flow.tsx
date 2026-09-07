@@ -6,12 +6,12 @@ import {
   ExternalLink, BookmarkPlus, Eye, Users, FileSpreadsheet
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import type { SeedData, GeneratedPaper, AssessmentSession, GroupRecommendation, SavedQuestionSet, Student } from './types';
-import { CLASS_SUBJECT_MAP, CLASS_LABELS, getLevelLabel, MONTHS_LIST, YEARS_LIST } from './data';
-import { EducationGraph, getQuestionsForAssessment } from './knowledge-graph';
-import { downloadStudentPaper, downloadAnswerKey } from './print-paper';
-import { parseResultsCSV, mapResultsToStudents, buildGroupRecommendations } from './services';
-import { savePaper, saveSession, saveSavedSet, saveStudent } from './db';
+import type { SeedData, GeneratedPaper, AssessmentSession, GroupRecommendation, SavedQuestionSet, Student } from '../types';
+import { CLASS_SUBJECT_MAP, CLASS_LABELS, getLevelLabel, MONTHS_LIST, YEARS_LIST } from '../lib/data';
+import { EducationGraph, getQuestionsForAssessment } from '../lib/knowledge-graph';
+import { downloadStudentPaper, downloadAnswerKey } from '../components/print-paper';
+import { parseResultsCSV, mapResultsToStudents, buildGroupRecommendations } from '../lib/services';
+import { savePaper, saveSession, saveSavedSet, saveStudent } from '../lib/db';
 
 interface AssessmentFlowProps {
   data: SeedData;

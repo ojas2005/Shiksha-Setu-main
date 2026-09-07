@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import type { GeneratedPaper } from './types';
+import type { GeneratedPaper } from '../types';
 
 // ============================================================================
 // DEVANAGARI FONT SUPPORT

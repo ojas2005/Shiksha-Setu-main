@@ -8,22 +8,22 @@ import {
   BookmarkPlus, Phone, Lock, HeartHandshake, Eye
 } from 'lucide-react';
 import { registerSW } from 'virtual:pwa-register';
-import { demoUsers } from './data';
-import { loadData, resetDemoData } from './db';
+import { demoUsers } from './lib/data';
+import { loadData, resetDemoData } from './lib/db';
 import type { DemoUser, SeedData } from './types';
-import './styles.css';
-import './extra.css';
-import './ui-polish.css';
+import './styles/styles.css';
+import './styles/extra.css';
+import './styles/ui-polish.css';
 import {
   AcademicStructure, Questions, KnowledgeGraph, Schools, SyncQueue,
   Classes, Assessments, TeachingGroups, ParentProgress
-} from './main-views';
-import { AssessmentFlow } from './assessment-flow';
-import { AssessmentHistory } from './assessment-history';
-import { KGEditor } from './kg-editor';
-import { buildEducationGraph } from './knowledge-graph';
-import { StudentRegister } from './student-register';
-import { SavedQuestionSets } from './saved-question-sets';
+} from './views/main-views';
+import { AssessmentFlow } from './views/assessment-flow';
+import { AssessmentHistory } from './views/assessment-history';
+import { KGEditor } from './views/kg-editor';
+import { buildEducationGraph } from './lib/knowledge-graph';
+import { StudentRegister } from './views/student-register';
+import { SavedQuestionSets } from './views/saved-question-sets';
 
 registerSW({ immediate: true });
 

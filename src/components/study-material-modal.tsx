@@ -3,7 +3,7 @@ import {
   X, BookOpen, Sparkles, Printer, CheckCircle2,
   ChevronRight, HeartHandshake, Layers, Clock, HelpCircle, ArrowRight
 } from 'lucide-react';
-import type { StudyMaterial, Level, SeedData } from './types';
+import type { StudyMaterial, Level, SeedData } from '../types';
 import jsPDF from 'jspdf';
 
 interface StudyMaterialModalProps {

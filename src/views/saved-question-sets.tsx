@@ -4,9 +4,9 @@ import {
   FileText, Download, FileCheck, Trash2, Calendar, BookOpen,
   Sparkles, Layers, ArrowRight, PlusCircle, CheckCircle2, Eye, X, Filter
 } from 'lucide-react';
-import type { SavedQuestionSet, SeedData, GeneratedPaper } from './types';
-import { deleteSavedSet, saveSavedSet } from './db';
-import { downloadStudentPaper, downloadAnswerKey } from './print-paper';
+import type { SavedQuestionSet, SeedData, GeneratedPaper } from '../types';
+import { deleteSavedSet, saveSavedSet } from '../lib/db';
+import { downloadStudentPaper, downloadAnswerKey } from '../components/print-paper';
 
 interface SavedQuestionSetsProps {
   data: SeedData;

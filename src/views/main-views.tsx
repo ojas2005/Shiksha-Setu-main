@@ -6,12 +6,12 @@ import {
   User, UserPlus, Phone, Mail, FileText, Calendar, Plus, X, Save,
   AlertCircle, Eye, Printer, HeartHandshake, ChevronDown, Check, Layers, Network
 } from 'lucide-react';
-import { generateMonthlyPulse, getRecommendation } from './services';
-import type { SeedData, Student, Classroom, Competency, Question } from './types';
-import { StudyMaterialModal } from './study-material-modal';
-import { downloadStudentPaper } from './print-paper';
-import { saveKGEdit } from './db';
-import { CLASS_SUBJECT_MAP, CLASS_LABELS, getLevelLabel, MONTHS_LIST, YEARS_LIST } from './data';
+import { generateMonthlyPulse, getRecommendation } from '../lib/services';
+import type { SeedData, Student, Classroom, Competency, Question } from '../types';
+import { StudyMaterialModal } from '../components/study-material-modal';
+import { downloadStudentPaper } from '../components/print-paper';
+import { saveKGEdit } from '../lib/db';
+import { CLASS_SUBJECT_MAP, CLASS_LABELS, getLevelLabel, MONTHS_LIST, YEARS_LIST } from '../lib/data';
 import jsPDF from 'jspdf';
 
 function PageHeader({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: React.ReactNode }) {

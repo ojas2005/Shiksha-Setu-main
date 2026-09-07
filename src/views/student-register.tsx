@@ -3,9 +3,9 @@ import {
   Users, UserPlus, Search, Filter, Phone, Mail, User, BookOpen,
   Plus, Edit2, Trash2, CheckCircle2, Download, Layers, Sparkles, X, Save, ArrowRight
 } from 'lucide-react';
-import type { SeedData, Student, Classroom } from './types';
-import { saveStudent, deleteStudent, saveClassroom } from './db';
-import { StudyMaterialModal } from './study-material-modal';
+import type { SeedData, Student, Classroom } from '../types';
+import { saveStudent, deleteStudent, saveClassroom } from '../lib/db';
+import { StudyMaterialModal } from '../components/study-material-modal';
 
 interface StudentRegisterProps {
   data: SeedData;

@@ -25,7 +25,7 @@ npm run build
 npm run preview -- --host 0.0.0.0 --port 4173
 ```
 
-See [DEMO_GUIDE.md](DEMO_GUIDE.md) for full install/demo instructions, including mobile installation and offline verification.
+See [Documents/DEMO_GUIDE.md](Documents/DEMO_GUIDE.md) for full install/demo instructions, including mobile installation and offline verification.
 
 ## Testing
 
@@ -35,7 +35,13 @@ npm run test
 
 ## Project Structure
 
-- `src/` — application source (assessment flow, knowledge graph, data layer, views)
+- `src/` — application source
+  - `src/main.tsx` — app shell, routing and login
+  - `src/types.ts` — shared domain types
+  - `src/lib/` — data layer: seed data, Dexie storage, services, knowledge graph
+  - `src/views/` — one module per route (dashboard, assessment flow, register, …)
+  - `src/components/` — shared UI pieces (study-material modal, PDF generation)
+  - `src/styles/` — stylesheets, loaded in order by `main.tsx`
 - `public/` — static assets
 - `scripts/` — build/utility scripts (e.g. icon generation)
-- `html-prototype/` — standalone HTML prototype
+- `Documents/` — demo guide, standalone HTML prototype and sample data

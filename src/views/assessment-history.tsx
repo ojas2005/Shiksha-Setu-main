@@ -4,9 +4,9 @@ import {
   FileText, Download, FileCheck, Trash2, Calendar, Users,
   Sparkles, Layers, ArrowRight, PlusCircle, CheckCircle2
 } from 'lucide-react';
-import type { GeneratedPaper, AssessmentSession, SeedData } from './types';
-import { getAllPapers, getAllSessions, deletePaper } from './db';
-import { downloadStudentPaper, downloadAnswerKey } from './print-paper';
+import type { GeneratedPaper, AssessmentSession, SeedData } from '../types';
+import { getAllPapers, getAllSessions, deletePaper } from '../lib/db';
+import { downloadStudentPaper, downloadAnswerKey } from '../components/print-paper';
 
 interface AssessmentHistoryProps {
   data: SeedData;

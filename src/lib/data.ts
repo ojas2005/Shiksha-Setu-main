@@ -1,4 +1,4 @@
-import type { DemoUser, SeedData, Competency, Question, Student, Classroom, StudyMaterial, SavedQuestionSet } from './types';
+import type { DemoUser, SeedData, Competency, Question, Student, Classroom, StudyMaterial, SavedQuestionSet } from '../types';
 
 export const demoUsers: DemoUser[] = [
   { username: 'teacher.sunita', password: 'Teacher@123', name: 'Sunita Devi (Jha)', role: 'TEACHER', mobileNumber: '+91 98765 43210', teacherId: 'HV-SRW-0142' },

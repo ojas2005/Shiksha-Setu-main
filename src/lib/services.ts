@@ -1,4 +1,4 @@
-import type { Question, SeedData, Student, StudentResult, GroupRecommendation, Level } from './types';
+import type { Question, SeedData, Student, StudentResult, GroupRecommendation, Level } from '../types';
 import { getTeachingRecommendationFromKG, EducationGraph } from './knowledge-graph';
 import Papa from 'papaparse';
 

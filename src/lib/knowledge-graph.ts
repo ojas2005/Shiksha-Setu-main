@@ -8,7 +8,7 @@
  * Edge types:   CONTAINS | ASSESSED_BY | PREREQUISITE | TEACHES
  */
 
-import type { SeedData, KGNode, KGEdge, KGEdit, Question, Competency } from './types';
+import type { SeedData, KGNode, KGEdge, KGEdit, Question, Competency } from '../types';
 
 // ── Internal adjacency list structure ────────────────────────────────────────
 type AdjEntry = { targetId: string; edgeType: KGEdge['edgeType']; weight: number };

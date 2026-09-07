@@ -49,6 +49,10 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
     setTimeout(() => setToastMessage(''), 3500);
   };
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
   // Filtered Students
   const filteredStudents = useMemo(() => {
     return data.students.filter(s => {
@@ -62,6 +66,17 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
       return matchClass && matchGender && matchQuery;
     });
   }, [data.students, selectedClassId, genderFilter, searchQuery]);
+
+  // Reset to page 1 on filter or search query change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedClassId, genderFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / pageSize));
+  const paginatedStudents = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredStudents.slice(start, start + pageSize);
+  }, [filteredStudents, currentPage, pageSize]);
 
   // Open Edit Modal
   const handleOpenEdit = (student: Student) => {
@@ -325,7 +340,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
               </tr>
             </thead>
             <tbody>
-              {filteredStudents.length === 0 ? (
+              {paginatedStudents.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="empty-table-cell">
                     <User size={36} className="text-muted" />
@@ -336,7 +351,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
                   </td>
                 </tr>
               ) : (
-                filteredStudents.map(student => {
+                paginatedStudents.map(student => {
                   const classObj = data.classrooms.find(c => c.id === student.classId);
                   const levelObj = data.levels.find(l => l.id === student.currentLevelId) || data.levels[2];
                   return (
@@ -421,6 +436,51 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Toolbar */}
+        <div className="table-pagination-bar">
+          <div className="table-pagination-info">
+            <span>
+              Showing {filteredStudents.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}
+              {Math.min(currentPage * pageSize, filteredStudents.length)} of {filteredStudents.length} entries
+            </span>
+            <div className="page-size-selector">
+              <label>Per page:</label>
+              <select
+                value={pageSize}
+                onChange={e => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="table-pagination-actions">
+            <button
+              className="pagination-btn"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            >
+              Previous
+            </button>
+            <span className="pagination-page-num">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className="pagination-btn"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ADD / EDIT STUDENT MODAL */}
@@ -481,14 +541,13 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
                 <div className="form-group">
                   <label>Grade Level</label>
                   <select value={gradeLevel} onChange={e => setGradeLevel(e.target.value)}>
-                    <option value="Grade 1">Grade 1</option>
-                    <option value="Grade 2">Grade 2</option>
-                    <option value="Grade 3">Grade 3</option>
-                    <option value="Grade 4">Grade 4</option>
-                    <option value="Grade 5">Grade 5</option>
                     <option value="Grade 6">Grade 6</option>
                     <option value="Grade 7">Grade 7</option>
                     <option value="Grade 8">Grade 8</option>
+                    <option value="Grade 9">Grade 9</option>
+                    <option value="Grade 10">Grade 10</option>
+                    <option value="Grade 11">Grade 11</option>
+                    <option value="Grade 12">Grade 12</option>
                   </select>
                 </div>
               </div>
@@ -578,7 +637,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
                   Tap all grades taught together in this room for multi-grade classrooms.
                 </p>
                 <div className="grades-select-grid">
-                  {['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'].map(g => (
+                  {['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'].map(g => (
                     <button
                       key={g}
                       type="button"

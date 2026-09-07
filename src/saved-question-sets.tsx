@@ -18,6 +18,9 @@ export function SavedQuestionSets({ data, onRefreshData }: SavedQuestionSetsProp
   const [selectedSet, setSelectedSet] = useState<SavedQuestionSet | null>(null);
   const [filterMonth, setFilterMonth] = useState<string>('all');
   const [filterStandard, setFilterStandard] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(6);
 
   const handleDelete = async (id: string, name: string) => {
     if (window.confirm(`Are you sure you want to delete question set "${name}"?`)) {
@@ -27,11 +30,27 @@ export function SavedQuestionSets({ data, onRefreshData }: SavedQuestionSetsProp
     }
   };
 
-  const filteredSets = data.savedSets.filter(s => {
-    const matchMonth = filterMonth === 'all' || s.month === filterMonth;
-    const matchStd = filterStandard === 'all' || s.standardId === filterStandard;
-    return matchMonth && matchStd;
-  });
+  const filteredSets = React.useMemo(() => {
+    return data.savedSets.filter(s => {
+      const matchMonth = filterMonth === 'all' || s.month === filterMonth;
+      const matchStd = filterStandard === 'all' || s.standardId === filterStandard;
+      const matchQuery = !searchQuery ||
+        s.setName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.subjectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.standardName.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchMonth && matchStd && matchQuery;
+    });
+  }, [data.savedSets, filterMonth, filterStandard, searchQuery]);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filterMonth, filterStandard, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredSets.length / pageSize));
+  const paginatedSets = React.useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredSets.slice(start, start + pageSize);
+  }, [filteredSets, currentPage, pageSize]);
 
   const monthsList = Array.from(new Set(data.savedSets.map(s => s.month)));
 
@@ -69,6 +88,15 @@ export function SavedQuestionSets({ data, onRefreshData }: SavedQuestionSetsProp
       {/* Toolbar / Filters */}
       <div className="panel list-panel">
         <div className="list-toolbar">
+          <div className="search">
+            <input
+              type="text"
+              placeholder="Search by set name, standard, or subject..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+
           <div className="filter-group-row">
             <div className="filter-item">
               <label>Standard / Class:</label>
@@ -94,15 +122,11 @@ export function SavedQuestionSets({ data, onRefreshData }: SavedQuestionSetsProp
               </select>
             </div>
           </div>
-
-          <span className="tiny-note">
-            Showing <strong>{filteredSets.length}</strong> finalized question set(s)
-          </span>
         </div>
 
         {/* Saved Sets Grid */}
         <div className="saved-sets-grid">
-          {filteredSets.length === 0 ? (
+          {paginatedSets.length === 0 ? (
             <div className="empty-state-box">
               <FileText size={48} className="text-muted" />
               <h3>No Saved Question Sets Found</h3>
@@ -114,7 +138,7 @@ export function SavedQuestionSets({ data, onRefreshData }: SavedQuestionSetsProp
               </button>
             </div>
           ) : (
-            filteredSets.map(set => (
+            paginatedSets.map(set => (
               <div className="saved-set-card" key={set.id}>
                 <div className="set-card-header">
                   <div className="set-name-badge">
@@ -190,6 +214,50 @@ export function SavedQuestionSets({ data, onRefreshData }: SavedQuestionSetsProp
               </div>
             ))
           )}
+        </div>
+
+        {/* Pagination Toolbar */}
+        <div className="table-pagination-bar">
+          <div className="table-pagination-info">
+            <span>
+              Showing {filteredSets.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}
+              {Math.min(currentPage * pageSize, filteredSets.length)} of {filteredSets.length} sets
+            </span>
+            <div className="page-size-selector">
+              <label>Per page:</label>
+              <select
+                value={pageSize}
+                onChange={e => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={3}>3</option>
+                <option value={6}>6</option>
+                <option value={12}>12</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="table-pagination-actions">
+            <button
+              className="pagination-btn"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            >
+              Previous
+            </button>
+            <span className="pagination-page-num">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className="pagination-btn"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 

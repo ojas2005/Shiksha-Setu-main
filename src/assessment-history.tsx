@@ -192,7 +192,7 @@ export function AssessmentHistory({ data }: AssessmentHistoryProps) {
             </div>
 
             {/* Pagination Controls */}
-            <div className="table-pagination-bar" style={{ marginTop: '16px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+            <div className="table-pagination-bar">
               <div className="table-pagination-info">
                 <span>
                   Showing {filteredPapers.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}

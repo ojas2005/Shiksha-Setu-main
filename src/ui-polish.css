@@ -824,3 +824,42 @@ select{text-overflow:ellipsis}
   white-space:nowrap;
   max-width:100%;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Hover lift inside horizontal scrollers.
+   Setting overflow-x:auto also makes the block axis a scroll container — CSS
+   does not allow `visible` on one axis alone — so these rows cropped the
+   -3px hover lift and its shadow off the top of the cards inside them.
+   Give each scroller vertical room and pull it back with a matching negative
+   margin, so the clearance is real but the layout position is unchanged.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.classrooms-ribbon{padding-top:12px;margin-top:-12px}
+.subject-tabs-row{padding-top:8px;margin-top:-8px}
+.students-table-container{padding-top:6px;margin-top:-6px}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Fixed sidebar.
+   .app-shell is a flex row, so the sidebar was stretched to the full page
+   height and scrolled away with the content. Pin it to the viewport and let
+   only the main column scroll past it. align-items:flex-start is required —
+   a stretched flex item has no room to stick.
+
+   Guarded to the desktop range: below 700px the sidebar is a fixed off-canvas
+   drawer with its own transform, which this must not disturb.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media(min-width:701px){
+  .app-shell{align-items:flex-start}
+  .sidebar{
+    position:sticky;
+    top:0;
+    height:100vh;
+    height:100dvh;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    scrollbar-width:thin;
+  }
+  .sidebar::-webkit-scrollbar{width:5px}
+  .sidebar::-webkit-scrollbar-thumb{background:#cfdcd8;border-radius:4px}
+}

@@ -27,8 +27,6 @@ export const subjects = [
 ];
 
 export const CLASS_SUBJECT_MAP: Record<string, string[]> = {
-  'std-6':  ['hin', 'eng', 'mat', 'sci'],
-  'std-7':  ['hin', 'eng', 'mat', 'sci'],
   'std-8':  ['hin', 'eng', 'mat', 'sci'],
   'std-9':  ['eng', 'mat', 'bio', 'che', 'phy'],
   'std-10': ['eng', 'mat', 'bio', 'che', 'phy'],
@@ -37,8 +35,6 @@ export const CLASS_SUBJECT_MAP: Record<string, string[]> = {
 };
 
 export const CLASS_LABELS: Record<string, string> = {
-  'std-6': 'Grade 6',
-  'std-7': 'Grade 7',
   'std-8': 'Grade 8',
   'std-9': 'Grade 9',
   'std-10': 'Grade 10',
@@ -70,24 +66,6 @@ export function getLevelLabel(subjectId: string, levelId: string): string {
 
 // ── Multi-grade Classrooms ───────────────────────────────────────────────────
 export const seedClassrooms: Classroom[] = [
-  {
-    id: 'class-6-a',
-    name: 'Grade 6 · Section A',
-    grades: ['Grade 6'],
-    roomName: 'Section A',
-    teacherName: 'Anita Sharma',
-    studentCount: 30,
-    academicYear: '2026–27',
-  },
-  {
-    id: 'class-7-b',
-    name: 'Grade 7 · Section B',
-    grades: ['Grade 7'],
-    roomName: 'Section B',
-    teacherName: 'Anita Sharma',
-    studentCount: 28,
-    academicYear: '2026–27',
-  },
   {
     id: 'class-8-a',
     name: 'Grade 8 · Section A',
@@ -427,11 +405,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-1',
     name: 'Rekha Kumari',
-    classId: 'class-6-a',
+    classId: 'class-8-a',
     admission: 'HV-26-001',
     rollNumber: 14,
     gender: 'Girl',
-    gradeLevel: 'Grade 6',
+    gradeLevel: 'Grade 8',
     parentName: 'Rameshwar Kumar',
     parentPhone: '+91 98765 11001',
     parentEmail: 'rameshwar.k@gmail.com',
@@ -452,11 +430,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-2',
     name: 'Anita Devi',
-    classId: 'class-7-b',
+    classId: 'class-9-a',
     admission: 'HV-26-002',
     rollNumber: 1,
     gender: 'Girl',
-    gradeLevel: 'Grade 7',
+    gradeLevel: 'Grade 8',
     parentName: 'Gopal Devi',
     parentPhone: '+91 98765 11002',
     parentEmail: '',
@@ -602,11 +580,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-8',
     name: 'Priya Verma',
-    classId: 'class-6-a',
+    classId: 'class-10-a',
     admission: 'HV-26-008',
     rollNumber: 7,
     gender: 'Girl',
-    gradeLevel: 'Grade 6',
+    gradeLevel: 'Grade 8',
     parentName: 'Vijay Verma',
     parentPhone: '+91 98765 11008',
     parentEmail: 'vijay.verma26@gmail.com',
@@ -627,11 +605,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-9',
     name: 'Rohan Gupta',
-    classId: 'class-6-a',
+    classId: 'class-11-a',
     admission: 'HV-26-009',
     rollNumber: 1,
     gender: 'Boy',
-    gradeLevel: 'Grade 6',
+    gradeLevel: 'Grade 8',
     parentName: 'Mahesh Gupta',
     parentPhone: '+91 98765 22001',
     parentEmail: 'mahesh.gupta@gmail.com',
@@ -652,11 +630,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-10',
     name: 'Sneha Sharma',
-    classId: 'class-6-a',
+    classId: 'class-12-a',
     admission: 'HV-26-010',
     rollNumber: 2,
     gender: 'Girl',
-    gradeLevel: 'Grade 6',
+    gradeLevel: 'Grade 8',
     parentName: 'Rajendra Sharma',
     parentPhone: '+91 98765 22002',
     parentEmail: 'rajendra.sharma@yahoo.co.in',
@@ -677,11 +655,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-11',
     name: 'Vikram Nair',
-    classId: 'class-6-a',
+    classId: 'class-8-a',
     admission: 'HV-26-011',
     rollNumber: 3,
     gender: 'Boy',
-    gradeLevel: 'Grade 6',
+    gradeLevel: 'Grade 8',
     parentName: 'Narayanan Nair',
     parentPhone: '+91 98765 22003',
     parentEmail: 'n.nair@kerala.in',
@@ -702,11 +680,11 @@ export const seedStudents: Student[] = [
   {
     id: 'stu-12',
     name: 'Aditi Rao',
-    classId: 'class-6-a',
+    classId: 'class-9-a',
     admission: 'HV-26-012',
     rollNumber: 4,
     gender: 'Girl',
-    gradeLevel: 'Grade 6',
+    gradeLevel: 'Grade 8',
     parentName: 'Prashant Rao',
     parentPhone: '+91 98765 22004',
     parentEmail: 'prashant.rao@gmail.com',
@@ -764,241 +742,39 @@ for (let i = 13; i <= 60; i++) {
 }
 
 // ── Initial Seeded Saved Question Sets (stand_month_setno) ────────────────────
+/**
+ * Demo saved sets, built from the NCERT bank so the archive shows real
+ * curriculum content for in-range classes rather than legacy grades.
+ */
+function buildDemoSet(
+  setName: string, standardId: string, standardName: string,
+  subjectId: string, subjectName: string, month: string, createdAt: string,
+): SavedQuestionSet {
+  const qs = ncertQuestions.filter(q => q.standardId === standardId && q.subjectId === subjectId);
+  return {
+    id: `set-${setName}`,
+    setName,
+    standardId,
+    standardName,
+    month,
+    setNumber: '01',
+    subjectId,
+    subjectName,
+    targetLevelId: 'l3',
+    createdAt,
+    totalQuestions: qs.length,
+    questions: qs,
+    levelDistribution: qs.reduce((acc, q) => ({ ...acc, [q.levelId]: (acc[q.levelId] || 0) + 1 }), {} as Record<string, number>),
+    status: 'FINALIZED',
+  };
+}
+
 export const seedSavedSets: SavedQuestionSet[] = [
-  {
-    id: 'set-std6-aug26-01',
-    setName: 'std6_aug2026_set01',
-    standardId: 'std-6',
-    standardName: 'Grade 6',
-    month: 'August 2026',
-    setNumber: '01',
-    subjectId: 'mat',
-    subjectName: 'Mathematics',
-    targetLevelId: 'l3',
-    createdAt: '2026-08-10T10:30:00.000Z',
-    totalQuestions: 5,
-    status: 'FINALIZED',
-    levelDistribution: { l1: 1, l2: 1, l3: 1, l4: 1, l5: 1 },
-    questions: [
-      {
-        id: 'q-s6-l1',
-        standardId: 'std-6',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-6-1',
-        levelId: 'l1',
-        text: 'What is the place value of digit 7 in 4,752?',
-        options: ['7', '70', '700', '7000'],
-        answer: '700',
-        marks: 1,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-s6-l2',
-        standardId: 'std-6',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-6-1',
-        levelId: 'l2',
-        text: 'Which is greater: 0.7 or 0.07?',
-        options: ['0.7', '0.07', 'Both are equal', 'Cannot be determined'],
-        answer: '0.7',
-        marks: 1,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-s6-l3',
-        standardId: 'std-6',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-6-2',
-        levelId: 'l3',
-        text: 'Solve: 3/4 + 1/2 = ?',
-        options: ['4/6', '5/4', '1', '4/4'],
-        answer: '5/4',
-        marks: 2,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-s6-l4',
-        standardId: 'std-6',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-6-3',
-        levelId: 'l4',
-        text: 'Find the perimeter of a rectangle with length 12 cm and width 8 cm.',
-        options: ['20 cm', '40 cm', '96 sq cm', '24 cm'],
-        answer: '40 cm',
-        marks: 2,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-s6-l5',
-        standardId: 'std-6',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-6-4',
-        levelId: 'l5',
-        text: 'If 3x + 7 = 28, find the value of 2x - 1.',
-        options: ['11', '13', '14', '7'],
-        answer: '13',
-        marks: 3,
-        type: 'MCQ'
-      }
-    ]
-  },
-  {
-    id: 'set-std3-sep26-01',
-    setName: 'std3_sep2026_set01',
-    standardId: 'std-3',
-    standardName: 'Grade 3',
-    month: 'September 2026',
-    setNumber: '01',
-    subjectId: 'mat',
-    subjectName: 'Mathematics',
-    targetLevelId: 'l3',
-    createdAt: '2026-09-02T09:15:00.000Z',
-    totalQuestions: 5,
-    status: 'FINALIZED',
-    levelDistribution: { l1: 1, l2: 1, l3: 1, l4: 1, l5: 1 },
-    questions: [
-      {
-        id: 'q-s3-l1',
-        standardId: 'std-3',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-3-1',
-        levelId: 'l1',
-        text: 'Count the total number of stars: ★ ★ ★ ★ ★ ★',
-        options: ['4', '5', '6', '7'],
-        answer: '6',
-        marks: 1,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-s3-l2',
-        standardId: 'std-3',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-3-1',
-        levelId: 'l2',
-        text: 'Write the number: 4 Tens and 3 Ones = ?',
-        options: ['34', '43', '7', '403'],
-        answer: '43',
-        marks: 1,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-s3-l3',
-        standardId: 'std-3',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-3-2',
-        levelId: 'l3',
-        text: 'Add: 36 + 25 = ?',
-        options: ['51', '61', '59', '60'],
-        answer: '61',
-        marks: 2,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-s3-l4',
-        standardId: 'std-3',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-3-3',
-        levelId: 'l4',
-        text: 'Raju has 24 pencils. He shares them equally among 4 friends. How many does each get?',
-        options: ['4', '6', '8', '12'],
-        answer: '6',
-        marks: 2,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-s3-l5',
-        standardId: 'std-3',
-        subjectId: 'mat',
-        competencyId: 'comp-mat-3-4',
-        levelId: 'l5',
-        text: 'Complete the pattern: 5, 10, 15, 20, ___, ___',
-        options: ['22, 24', '25, 30', '21, 26', '30, 35'],
-        answer: '25, 30',
-        marks: 2,
-        type: 'MCQ'
-      }
-    ]
-  },
-  {
-    id: 'set-std134-aug26-02',
-    setName: 'std1_3_4_aug2026_set02',
-    standardId: 'std-3',
-    standardName: 'Grade 1, 3, 4 Room B',
-    month: 'August 2026',
-    setNumber: '02',
-    subjectId: 'hin',
-    subjectName: 'Hindi / भाषा',
-    targetLevelId: 'l3',
-    createdAt: '2026-08-15T11:00:00.000Z',
-    totalQuestions: 5,
-    status: 'FINALIZED',
-    levelDistribution: { l1: 1, l2: 1, l3: 1, l4: 1, l5: 1 },
-    questions: [
-      {
-        id: 'q-hin-l1',
-        standardId: 'std-3',
-        subjectId: 'hin',
-        competencyId: 'comp-hin-1',
-        levelId: 'l1',
-        text: 'चित्र देखकर बताएं: [कमल] की पहली ध्वनि कौन सी है?',
-        options: ['क', 'म', 'ल', 'न'],
-        answer: 'क',
-        marks: 1,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-hin-l2',
-        standardId: 'std-3',
-        subjectId: 'hin',
-        competencyId: 'comp-hin-2',
-        levelId: 'l2',
-        text: 'वर्ण जोड़कर शब्द बनाइए: घ + र = ?',
-        options: ['घर', 'जल', 'कल', 'रथ'],
-        answer: 'घर',
-        marks: 1,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-hin-l3',
-        standardId: 'std-3',
-        subjectId: 'hin',
-        competencyId: 'comp-hin-3',
-        levelId: 'l3',
-        text: '"पानी" शब्द में कौन-कौन सी मात्राएं हैं?',
-        options: ['आ और ई', 'इ और उ', 'ए और ऐ', 'अ और आ'],
-        answer: 'आ और ई',
-        marks: 2,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-hin-l4',
-        standardId: 'std-3',
-        subjectId: 'hin',
-        competencyId: 'comp-hin-4',
-        levelId: 'l4',
-        text: 'सही वाक्य चुनिए:',
-        options: ['रोहन पानी पीता है।', 'रोहन पानी पीती है।', 'रोहन पानी खाता है।', 'रोहन पानी बहता है।'],
-        answer: 'रोहन पानी पीता है।',
-        marks: 2,
-        type: 'MCQ'
-      },
-      {
-        id: 'q-hin-l5',
-        standardId: 'std-3',
-        subjectId: 'hin',
-        competencyId: 'comp-hin-5',
-        levelId: 'l5',
-        text: 'कहानी समझ: "पेड़ हमें फल और छाया देते हैं।" पेड़ से हमें क्या मिलता है?',
-        options: ['फल और छाया', 'केवल खिलौने', 'गाड़ी', 'किताबें'],
-        answer: 'फल और छाया',
-        marks: 2,
-        type: 'MCQ'
-      }
-    ]
-  }
+  buildDemoSet('std8_august2026_set01', 'std-8', 'Grade 8', 'mat', 'Mathematics / Numeracy', 'August 2026', '2026-08-10T10:30:00.000Z'),
+  buildDemoSet('std9_september2026_set01', 'std-9', 'Grade 9', 'phy', 'Physics', 'September 2026', '2026-09-02T09:15:00.000Z'),
+  buildDemoSet('std8_august2026_set02', 'std-8', 'Grade 8', 'hin', 'Hindi / भाषा', 'August 2026', '2026-08-15T11:00:00.000Z'),
 ];
 
-// ── Competencies & Questions for Knowledge Graph Engine ─────────────────────
 export const competencies: Competency[] = [...ncertCompetencies];
 
 /**
@@ -1033,7 +809,7 @@ const domainsBySubject: Record<string, string[]> = {
   evs: ['Our Surroundings', 'Plants & Animals', 'Clean Water & Air'],
 };
 
-const standards = ['std-6', 'std-7', 'std-8', 'std-9', 'std-10', 'std-11', 'std-12'];
+const standards = ['std-8', 'std-9', 'std-10', 'std-11', 'std-12'];
 
 let compCounter = 1;
 let questionCounter = 1;

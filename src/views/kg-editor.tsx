@@ -22,7 +22,7 @@ export function KGEditor({ data, graph }: KGEditorProps) {
 
   // Top-Level Update Knowledge Graph Modal State (Competency / Node Creation)
   const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
-  const [newStandardId, setNewStandardId] = useState<string>('std-6');
+  const [newStandardId, setNewStandardId] = useState<string>('std-8');
   const [newCompSubjectId, setNewCompSubjectId] = useState<string>('mat');
   const [newDomain, setNewDomain] = useState<string>('');
   const [newCompTitle, setNewCompTitle] = useState<string>('');

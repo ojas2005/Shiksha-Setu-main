@@ -13,7 +13,7 @@
 ## 0. What this builds
 
 Shiksha Setu is an **offline-first, no-backend PWA** for multi-grade rural
-classrooms (Grades 6–12). One teacher, several grades, unreliable connectivity.
+classrooms (Grades 8–12). One teacher, several grades, unreliable connectivity.
 
 The product loop:
 
@@ -382,8 +382,8 @@ export type GeneratedPaper = {
   id: string;
   setName?: string; // stand_month_setno
   timestamp: string;
-  classId: string;           // e.g. 'std-6'
-  className: string;         // e.g. 'Grade 6'
+  classId: string;           // e.g. 'std-8'
+  className: string;         // e.g. 'Grade 8'
   subjectId: string;
   subjectName: string;
   targetLevelId: string;     // e.g. 'l3'
@@ -471,8 +471,6 @@ export const subjects = [
 ];
 
 export const CLASS_SUBJECT_MAP: Record<string, string[]> = {
-  'std-6':  ['hin', 'eng', 'mat', 'sci'],
-  'std-7':  ['hin', 'eng', 'mat', 'sci'],
   'std-8':  ['hin', 'eng', 'mat', 'sci'],
   'std-9':  ['eng', 'mat', 'bio', 'che', 'phy'],
   'std-10': ['eng', 'mat', 'bio', 'che', 'phy'],
@@ -481,8 +479,6 @@ export const CLASS_SUBJECT_MAP: Record<string, string[]> = {
 };
 
 export const CLASS_LABELS: Record<string, string> = {
-  'std-6': 'Grade 6',
-  'std-7': 'Grade 7',
   'std-8': 'Grade 8',
   'std-9': 'Grade 9',
   'std-10': 'Grade 10',
@@ -520,24 +516,23 @@ reproduce the **shape** and generate plausible records to the stated counts.
 
 | Export | Lines | Count | Shape |
 |---|---|---|---|
-| `seedClassrooms` | 71–137 | 7 | `Classroom` — `std-6` … `std-12`, names like `Grade 6 · Section A`, `roomName`, `teacherName`, `academicYear: '2026-27'` |
+| `seedClassrooms` | — | 5 | `Classroom` — `std-8` … `std-12`, names like `Grade 8 · Section A`, `roomName`, `teacherName`, `academicYear: '2026–27'` |
 | `seedStudyMaterials` | 138–424 | ~15 | `StudyMaterial` — one per level×subject, with `teacherGuide`, `concreteActivities[]`, `printableWorksheets[]`, `parentHomeActivity`, `suggestedDuration` |
 | `seedStudents` | 425–765 | ~60 | `Student` — Indian names, `rollNumber`, `admission` like `HV-26-001`, parent name/phone/email, `trend`, `focus`, `currentLevelId`, `monthwiseLevels` |
 | `seedSavedSets` | 766–1000 | 3 | `SavedQuestionSet` — **contains the hand-authored real questions** |
 
-**Real Grade 6 Mathematics questions** (inside `seedSavedSets`, set
-`std6_september2026_set01`) — reproduce verbatim, they are referenced throughout:
+**Grade 8 Mathematics questions** (from the NCERT bank, surfaced in the demo set
+`std8_august2026_set01`) — reproduce verbatim, they are referenced throughout:
 
 | id | level | text | options | answer | marks |
 |---|---|---|---|---|---|
-| `q-s6-l1` | l1 | What is the place value of digit 7 in 4,752? | 7 / 70 / 700 / 7000 | `700` | 1 |
-| `q-s6-l2` | l2 | Which is greater: 0.7 or 0.07? | 0.7 / 0.07 / Both are equal / Cannot be determined | `0.7` | 1 |
-| `q-s6-l3` | l3 | Solve: 3/4 + 1/2 = ? | 4/6 / 5/4 / 1 / 4/4 | `5/4` | 2 |
-| `q-s6-l4` | l4 | Find the perimeter of a rectangle with length 12 cm and width 8 cm. | 20 cm / 40 cm / 96 sq cm / 24 cm | `40 cm` | 2 |
-| `q-s6-l5` | l5 | If 3x + 7 = 28, find the value of 2x − 1. | 11 / 13 / 14 / 7 | `13` | 3 |
+| `ncert-std-8-mat-l1` | l1 | What is the value of (−5) × (−4)? | −20 / 20 / −9 / 9 | `20` | 1 |
+| `ncert-std-8-mat-l2` | l2 | Find the square root of 144. | 11 / 12 / 13 / 14 | `12` | 1 |
+| `ncert-std-8-mat-l3` | l3 | Solve for x: 5x − 3 = 2x + 12. | 3 / 4 / 5 / 6 | `5` | 2 |
+| `ncert-std-8-mat-l4` | l4 | The volume of a cube is 216 cm³. Find one edge. | 4 / 5 / 6 / 8 cm | `6 cm` | 2 |
+| `ncert-std-8-mat-l5` | l5 | ₹5000 at 8% simple interest for 3 years. | ₹1000 / ₹1200 / ₹1400 / ₹1600 | `₹1200` | 3 |
 
-Competency ids: `comp-mat-6-1` (l1, l2), `comp-mat-6-2` (l3), `comp-mat-6-3` (l4),
-`comp-mat-6-4` (l5). All `type: 'MCQ'`.
+Competency ids follow `comp-{standardId}-{subjectId}-ncert-{levelId}`. All `type: 'MCQ'`.
 
 ### 3.3 Question collection + generators — VERBATIM (lines 1001–1100)
 
@@ -567,7 +562,7 @@ const domainsBySubject: Record<string, string[]> = {
   evs: ['Our Surroundings', 'Plants & Animals', 'Clean Water & Air'],
 };
 
-const standards = ['std-6', 'std-7', 'std-8', 'std-9', 'std-10', 'std-11', 'std-12'];
+const standards = ['std-8', 'std-9', 'std-10', 'std-11', 'std-12'];
 
 let compCounter = 1;
 let questionCounter = 1;
@@ -652,7 +647,7 @@ export const seedData: SeedData = {
 > text — with nothing failing visibly.
 
 The loop produces **140 competencies** and **280 template questions**
-(7 standards × 4–5 subjects × 4 domains × 5 levels × 2 questions).
+(5 standards × 4–5 subjects × 4 domains × 5 levels × 2 questions).
 
 ---
 
@@ -723,7 +718,7 @@ export async function loadData(): Promise<SeedData> {
     loaded = seedData;
   }
 
-  // Filter out any legacy Grade 1-5 classrooms (checking exact grades array)
+  // Filter out any legacy classrooms below Grade 8 (checking exact grades array)
   const legacyGrades = new Set(['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5']);
   loaded.classrooms = loaded.classrooms.filter(c => !c.grades.some(g => legacyGrades.has(g)));
   const validClassIds = new Set(loaded.classrooms.map(c => c.id));
@@ -855,7 +850,7 @@ export const dbInfo = { engine: 'Dexie / IndexedDB', version: 3, validationStatu
 ```
 
 > ⚠️ The legacy-grade filter is a **migration**, not a nicety. Databases seeded
-> before the Grades 6–12 retarget still hold Grade 1–5 classrooms; without this
+> before the Grades 8–12 retarget still hold Grade 1–5 classrooms; without this
 > filter, returning users see stale rooms.
 
 ---
@@ -1423,7 +1418,7 @@ import { buildEducationGraph } from './knowledge-graph';
 
 describe('Assessment Services & Knowledge Graph Integration', () => {
   it('selects exactly one question for every active level (L1–L5)', () => {
-    const questions = generateMonthlyPulse(seedData, 'std-6', 'mat');
+    const questions = generateMonthlyPulse(seedData, 'std-8', 'mat');
     expect(questions).toHaveLength(seedData.levels.length);
     expect(new Set(questions.map(q => q.levelId)).size).toBe(seedData.levels.length);
   });
@@ -1471,7 +1466,7 @@ describe('Assessment Services & Knowledge Graph Integration', () => {
       graph,
       seedData,
       'mat',
-      'std-6'
+      'std-8'
     );
 
     expect(groups).toHaveLength(5);
@@ -1648,7 +1643,7 @@ Tactile Activities* (numbered), and printable worksheets.
 ### 10.2 Set identifier — VERBATIM
 
 ```ts
-const classPrefix = selectedStandardId.replace('-', '');              // 'std-6' -> 'std6'
+const classPrefix = selectedStandardId.replace('-', '');              // 'std-8' -> 'std8'
 const monthClean  = selectedMonth.toLowerCase().replace(/\s+/g, ''); // 'September 2026' -> 'september2026'
 const computedSetName = `${classPrefix}_${monthClean}_set${setNumber}`;
 // -> std6_september2026_set01

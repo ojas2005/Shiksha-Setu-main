@@ -312,7 +312,7 @@ function AdminDashboard({ data }: { data: SeedData }) {
         </div>
         <div className="stat-card">
           <div className="stat-icon green"><Database size={18} /></div>
-          <div><strong>{data.students.length}</strong><span>Students Enrolled</span><small>Classes 6–12</small></div>
+          <div><strong>{data.students.length}</strong><span>Students Enrolled</span><small>Classes 8–12</small></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon purple"><Database size={18} /></div>

@@ -50,14 +50,12 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
   // Selected Standard ID helper
   const selectedStandardId = useMemo(() => {
     const classObj = data.classrooms.find(c => c.id === selectedClassId);
-    if (!classObj) return 'std-6';
+    if (!classObj) return 'std-8';
     if (classObj.name.includes('Grade 12')) return 'std-12';
     if (classObj.name.includes('Grade 11')) return 'std-11';
     if (classObj.name.includes('Grade 10')) return 'std-10';
     if (classObj.name.includes('Grade 9')) return 'std-9';
-    if (classObj.name.includes('Grade 8')) return 'std-8';
-    if (classObj.name.includes('Grade 7')) return 'std-7';
-    return 'std-6';
+    return 'std-8';
   }, [selectedClassId, data.classrooms]);
 
   // Generate standard_month_setno identifier
@@ -233,7 +231,7 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
       graph,
       data,
       selectedSubject,
-      'std-6'
+      selectedStandardId
     );
 
     setGroups(recGroups);

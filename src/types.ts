@@ -140,8 +140,8 @@ export type GeneratedPaper = {
   id: string;
   setName?: string; // stand_month_setno
   timestamp: string;
-  classId: string;           // e.g. 'std-6'
-  className: string;         // e.g. 'Grade 6'
+  classId: string;           // e.g. 'std-8'
+  className: string;         // e.g. 'Grade 8'
   subjectId: string;
   subjectName: string;
   targetLevelId: string;     // e.g. 'l3'

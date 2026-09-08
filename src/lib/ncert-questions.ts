@@ -24,53 +24,11 @@ type Row = [string, string, string, string, string[], number];
 const MARKS: Record<string, number> = { l1: 1, l2: 1, l3: 2, l4: 2, l5: 3 };
 
 const ROWS: Row[] = [
-  // ══════════════ CLASS 6 ══════════════
   // Mathematics — Knowing Our Numbers, Integers, Fractions, Mensuration, Algebra
-  ['std-6','mat','l1','What is the place value of the digit 7 in 4,752?',['7','70','700','7000'],2],
-  ['std-6','mat','l2','Which is greater: 0.7 or 0.07?',['0.7','0.07','Both are equal','Cannot be determined'],0],
-  ['std-6','mat','l3','Solve: 3/4 + 1/2 = ?',['4/6','5/4','1','4/4'],1],
-  ['std-6','mat','l4','Find the perimeter of a rectangle with length 12 cm and width 8 cm.',['20 cm','40 cm','96 sq cm','24 cm'],1],
-  ['std-6','mat','l5','If 3x + 7 = 28, find the value of 2x − 1.',['11','13','14','7'],1],
   // Science — Food, Materials, Living World, Motion, Light
-  ['std-6','sci','l1','Which nutrient is the main source of energy for our body?',['Protein','Carbohydrate','Vitamin','Mineral'],1],
-  ['std-6','sci','l2','Which of these is a natural fibre obtained from a plant?',['Nylon','Cotton','Polyester','Acrylic'],1],
-  ['std-6','sci','l3','A magnet is broken into two pieces. What happens to the poles?',['Each piece has only one pole','Each piece has both north and south poles','The pieces lose magnetism','Only one piece stays magnetic'],1],
-  ['std-6','sci','l4','Why does a shadow form when an opaque object blocks light?',['Light bends around the object','Light passes through the object','Light travels in straight lines and cannot pass through','The object absorbs all light and re-emits it'],2],
-  ['std-6','sci','l5','A plant kept in a dark room turns pale and weak. Explain the most likely reason.',['It cannot carry out photosynthesis without light','It absorbs too much water','Its roots stop respiring','Its stomata close permanently'],0],
   // Hindi — व्याकरण एवं भाषा
-  ['std-6','hin','l1','"पुस्तक" शब्द का बहुवचन क्या है?',['पुस्तकें','पुस्तकों','पुस्तका','पुस्तकीय'],0],
-  ['std-6','hin','l2','निम्नलिखित में से शुद्ध वर्तनी वाला शब्द चुनिए।',['क्षत्रिय','क्शत्रिय','क्षत्रीय','कषत्रिय'],0],
-  ['std-6','hin','l3','"रोहन पानी पीता है।" इस वाक्य में क्रिया कौन सी है?',['रोहन','पानी','पीता है','कोई नहीं'],2],
-  ['std-6','hin','l4','संधि विच्छेद कीजिए: "सूर्योदय"',['सूर्य + उदय','सूर + उदय','सूर्यो + दय','सू + र्योदय'],0],
-  ['std-6','hin','l5','निम्नलिखित में से तत्सम शब्द चुनिए तथा पहचानिए।',['आग','अग्नि','आँख','हाथ'],1],
   // English — Grammar, Vocabulary, Comprehension
-  ['std-6','eng','l1','Choose the correct article: "She is ___ honest girl."',['a','an','the','no article'],1],
-  ['std-6','eng','l2','Identify the noun in: "The children played in the garden."',['played','in','children','the'],2],
-  ['std-6','eng','l3','Change to past tense: "He writes a letter every day."',['He write a letter','He wrote a letter','He has write a letter','He writing a letter'],1],
-  ['std-6','eng','l4','Which sentence uses the adverb correctly?',['She sings beautiful','She sings beautifully','She beautiful sings','She sing beautifully'],1],
-  ['std-6','eng','l5','"The old man was as brave as a lion." This sentence uses which figure of speech?',['Metaphor','Simile','Personification','Alliteration'],1],
 
-  // ══════════════ CLASS 7 ══════════════
-  ['std-7','mat','l1','What is the additive inverse of −9?',['9','−9','0','1/9'],0],
-  ['std-7','mat','l2','Find the value of 2³ × 2².',['32','16','64','10'],0],
-  ['std-7','mat','l3','The angles of a triangle are in the ratio 1:2:3. Find the largest angle.',['30°','60°','90°','120°'],2],
-  ['std-7','mat','l4','A shopkeeper buys an article for ₹400 and sells it for ₹460. Find the profit percentage.',['10%','12%','15%','20%'],2],
-  ['std-7','mat','l5','If the area of a circle is 154 cm², find its radius. (Take π = 22/7)',['7 cm','14 cm','21 cm','3.5 cm'],0],
-  ['std-7','sci','l1','Which part of the plant carries out photosynthesis?',['Root','Stem','Leaf','Flower'],2],
-  ['std-7','sci','l2','What is the boiling point of water at sea level?',['90 °C','100 °C','110 °C','120 °C'],1],
-  ['std-7','sci','l3','Which process converts water vapour into liquid water?',['Evaporation','Condensation','Sublimation','Transpiration'],1],
-  ['std-7','sci','l4','Why is a woollen sweater warm in winter?',['Wool produces heat','Air trapped in wool is a poor conductor','Wool absorbs sunlight','Wool reflects body heat away'],1],
-  ['std-7','sci','l5','Explain why acid rain damages marble monuments.',['Acid reacts with calcium carbonate in marble','Acid freezes on the surface','Acid increases marble density','Acid reflects ultraviolet light'],0],
-  ['std-7','hin','l1','"मित्र" शब्द का विलोम क्या है?',['शत्रु','साथी','सखा','बंधु'],0],
-  ['std-7','hin','l2','"विद्यालय" शब्द में कितने अक्षर हैं?',['तीन','चार','पाँच','छह'],1],
-  ['std-7','hin','l3','"वह धीरे-धीरे चलता है।" रेखांकित शब्द कौन सा अव्यय है?',['क्रिया विशेषण','संज्ञा','सर्वनाम','विशेषण'],0],
-  ['std-7','hin','l4','"नीलकमल" शब्द में कौन सा समास है?',['तत्पुरुष','कर्मधारय','द्वंद्व','बहुव्रीहि'],1],
-  ['std-7','hin','l5','"जिसका कोई अंत न हो" — इस वाक्यांश के लिए एक शब्द लिखिए।',['अनंत','अपार','असीम','अखंड'],0],
-  ['std-7','eng','l1','What is the plural of "child"?',['childs','children','childes','child'],1],
-  ['std-7','eng','l2','Choose the correct preposition: "The book is ___ the table."',['in','on','at','of'],1],
-  ['std-7','eng','l3','Convert to passive voice: "The teacher praised the student."',['The student praised the teacher','The student was praised by the teacher','The student is praising the teacher','The teacher was praised'],1],
-  ['std-7','eng','l4','Identify the subordinate clause: "I will call you when I reach home."',['I will call you','when I reach home','call you when','I reach'],1],
-  ['std-7','eng','l5','Which word best replaces "abundant" in: "The region has abundant rainfall."',['scarce','plentiful','moderate','irregular'],1],
 
   // ══════════════ CLASS 8 ══════════════
   ['std-8','mat','l1','What is the value of (−5) × (−4)?',['−20','20','−9','9'],1],

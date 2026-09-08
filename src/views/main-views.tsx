@@ -92,7 +92,7 @@ export function AcademicStructure({ data }: { data: SeedData }) {
           <div className="master-list">
             {[
               'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5',
-              'Grade 6', 'Grade 7', 'Grade 8', 'Bridge Course A'
+              'Grade 8', 'Grade 9', 'Grade 10', 'Bridge Course A'
             ]
               .filter(n => n.toLowerCase().includes(searchQuery.toLowerCase()))
               .map((name, index) => (
@@ -425,7 +425,7 @@ export function Questions({ data }: { data: SeedData }) {
 export function KnowledgeGraph({ data }: { data: SeedData }) {
   const navigate = useNavigate();
   const [selectedComp, setSelectedComp] = useState<Competency>(data.competencies[0] || {
-    id: 'comp-1', standardId: 'std-6', subjectId: 'mat', domain: 'Number System',
+    id: 'comp-1', standardId: 'std-8', subjectId: 'mat', domain: 'Number System',
     title: 'Place Value & Operations', outcome: 'Understanding place value and basic arithmetic.',
     levelId: 'l1', teachingActivity: 'Use concrete counting objects.'
   });
@@ -433,7 +433,7 @@ export function KnowledgeGraph({ data }: { data: SeedData }) {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   // Form State for Updating Knowledge Graph
-  const [newStandardId, setNewStandardId] = useState<string>('std-6');
+  const [newStandardId, setNewStandardId] = useState<string>('std-8');
   const [newCompSubjectId, setNewCompSubjectId] = useState<string>('mat');
   const [newDomain, setNewDomain] = useState<string>('');
   const [newCompTitle, setNewCompTitle] = useState<string>('');
@@ -522,7 +522,7 @@ export function KnowledgeGraph({ data }: { data: SeedData }) {
             <div className="graph-branches">
               <div>
                 <div className="connector horizontal" />
-                <div className="graph-node academic">Classes 6–12<br /><small>Classes 6–12</small></div>
+                <div className="graph-node academic">Classes 8–12<br /><small>Classes 8–12</small></div>
                 <div className="connector vertical" />
                 <div className="graph-node subject">{data.subjects[0].name}<br /><small>Subject</small></div>
                 <div className="connector vertical" />
@@ -1268,15 +1268,15 @@ export function Classes({ data }: { data: SeedData }) {
 export function Assessments({ data }: { data: SeedData }) {
   const navigate = useNavigate();
   const [generated, setGenerated] = useState(false);
-  const questions = generateMonthlyPulse(data, 'std-6', 'mat');
+  const questions = generateMonthlyPulse(data, 'std-8', 'mat');
 
   const handlePrint = () => {
     downloadStudentPaper({
       id: `paper-std6-${Date.now()}`,
       setName: 'std6_sep2026_set01',
       timestamp: new Date().toISOString(),
-      classId: 'std-6',
-      className: 'Grade 6 · Section A',
+      classId: 'std-8',
+      className: 'Grade 8 · Section A',
       subjectId: 'mat',
       subjectName: 'Mathematics',
       targetLevelId: 'l3',
@@ -1322,8 +1322,8 @@ export function Assessments({ data }: { data: SeedData }) {
         <div className="panel">
           <div className="panel-heading">
             <div>
-              <h3>September 2026 · Grade 6 Mathematics</h3>
-              <p className="muted">Hans Vriksh Demo School · Grade 6, Section A</p>
+              <h3>September 2026 · Grade 8 Mathematics</h3>
+              <p className="muted">Hans Vriksh Demo School · Grade 8, Section A</p>
             </div>
             <span className="tag success">Active</span>
           </div>

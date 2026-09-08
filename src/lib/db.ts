@@ -26,7 +26,7 @@ class ShikshaSetuDatabase extends Dexie {
 }
 
 const database = new ShikshaSetuDatabase();
-const SEED_ID = 'seed-data-v7';
+const SEED_ID = 'seed-data-v8';
 
 export async function loadData(): Promise<SeedData> {
   const existing = await database.payload.get(SEED_ID);
@@ -62,8 +62,9 @@ export async function loadData(): Promise<SeedData> {
     loaded = seedData;
   }
 
-  // Filter out any legacy Grade 1-5 classrooms (checking exact grades array)
-  const legacyGrades = new Set(['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5']);
+  // The platform serves Grades 8-12. Strip any classroom below that from a
+  // previously stored payload, then drop students whose room no longer resolves.
+  const legacyGrades = new Set(['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7']);
   loaded.classrooms = loaded.classrooms.filter(c => !c.grades.some(g => legacyGrades.has(g)));
   const validClassIds = new Set(loaded.classrooms.map(c => c.id));
   loaded.students = loaded.students.filter(s => validClassIds.has(s.classId));

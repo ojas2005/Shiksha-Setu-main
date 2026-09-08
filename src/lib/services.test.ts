@@ -5,7 +5,7 @@ import { buildEducationGraph } from './knowledge-graph';
 
 describe('Assessment Services & Knowledge Graph Integration', () => {
   it('selects exactly one question for every active level (L1–L5)', () => {
-    const questions = generateMonthlyPulse(seedData, 'std-6', 'mat');
+    const questions = generateMonthlyPulse(seedData, 'std-8', 'mat');
     expect(questions).toHaveLength(seedData.levels.length);
     expect(new Set(questions.map(q => q.levelId)).size).toBe(seedData.levels.length);
   });
@@ -53,7 +53,7 @@ describe('Assessment Services & Knowledge Graph Integration', () => {
       graph,
       seedData,
       'mat',
-      'std-6'
+      'std-8'
     );
 
     expect(groups).toHaveLength(5);

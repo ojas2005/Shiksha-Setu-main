@@ -31,7 +31,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
   const [name, setName] = useState<string>('');
   const [rollNumber, setRollNumber] = useState<number>(1);
   const [targetClassId, setTargetClassId] = useState<string>(data.classrooms[0]?.id || 'class-multigrade-1');
-  const [gradeLevel, setGradeLevel] = useState<string>('Grade 3');
+  const [gradeLevel, setGradeLevel] = useState<string>('Grade 8');
   const [gender, setGender] = useState<'Girl' | 'Boy' | 'Other'>('Girl');
   const [parentName, setParentName] = useState<string>('');
   const [parentPhone, setParentPhone] = useState<string>('+91 ');
@@ -42,7 +42,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
   // Classroom Form State
   const [newRoomName, setNewRoomName] = useState<string>('Room B');
   const [newTeacherName, setNewTeacherName] = useState<string>('Sunita Devi');
-  const [selectedGradesForRoom, setSelectedGradesForRoom] = useState<string[]>(['Grade 1', 'Grade 3', 'Grade 4']);
+  const [selectedGradesForRoom, setSelectedGradesForRoom] = useState<string[]>(['Grade 8']);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -84,7 +84,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
     setName(student.name);
     setRollNumber(student.rollNumber);
     setTargetClassId(student.classId);
-    setGradeLevel(student.gradeLevel || 'Grade 3');
+    setGradeLevel(student.gradeLevel || 'Grade 8');
     setGender(student.gender || 'Girl');
     setParentName(student.parentName || '');
     setParentPhone(student.parentPhone || '+91 ');
@@ -101,7 +101,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
     const nextRoll = currentClassStudents.length > 0 ? Math.max(...currentClassStudents.map(s => s.rollNumber)) + 1 : 1;
     setRollNumber(nextRoll);
     setTargetClassId(selectedClassId === 'all' ? (data.classrooms[0]?.id || 'class-multigrade-1') : selectedClassId);
-    setGradeLevel('Grade 3');
+    setGradeLevel('Grade 8');
     setGender('Girl');
     setParentName('');
     setParentPhone('+91 98765 ');
@@ -367,7 +367,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
                       </td>
                       <td>
                         <span className="class-tag">
-                          {student.gradeLevel || 'Grade 3'} · {classObj?.roomName || 'Room B'}
+                          {student.gradeLevel || 'Grade 8'} · {classObj?.roomName || 'Room B'}
                         </span>
                       </td>
                       <td>
@@ -541,8 +541,6 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
                 <div className="form-group">
                   <label>Grade Level</label>
                   <select value={gradeLevel} onChange={e => setGradeLevel(e.target.value)}>
-                    <option value="Grade 6">Grade 6</option>
-                    <option value="Grade 7">Grade 7</option>
                     <option value="Grade 8">Grade 8</option>
                     <option value="Grade 9">Grade 9</option>
                     <option value="Grade 10">Grade 10</option>
@@ -637,7 +635,7 @@ export function StudentRegister({ data, onRefreshData }: StudentRegisterProps) {
                   Tap all grades taught together in this room for multi-grade classrooms.
                 </p>
                 <div className="grades-select-grid">
-                  {['Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'].map(g => (
+                  {['Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'].map(g => (
                     <button
                       key={g}
                       type="button"

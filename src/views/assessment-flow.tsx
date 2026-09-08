@@ -101,13 +101,21 @@ export function AssessmentFlow({ data, graph, onRefreshData }: AssessmentFlowPro
           const fallbackMatches = data.questions.filter(q => q.subjectId === selectedSubject && q.levelId === lvl.id);
           const pool = matches.length > 0 ? matches : (fallbackMatches.length > 0 ? fallbackMatches : data.questions);
 
-          for (let k = 0; k < targetPerLevel && countAssigned < questionCount; k++) {
-            const selected = pool[k % pool.length];
-            if (selected) {
-              selectedQuestions.push(selected);
-              distribution[lvl.id] = (distribution[lvl.id] || 0) + 1;
-              countAssigned++;
-            }
+          // Take questions not already chosen. Indexing pool[0] for every level
+          // returned the same template sentence five times over, differing only
+          // by the level name, which read as a repeated question.
+          const chosenIds = new Set(selectedQuestions.map(q => q.id));
+          const chosenTexts = new Set(selectedQuestions.map(q => q.text));
+          let taken = 0;
+          for (const candidate of pool) {
+            if (taken >= targetPerLevel || countAssigned >= questionCount) break;
+            if (chosenIds.has(candidate.id) || chosenTexts.has(candidate.text)) continue;
+            selectedQuestions.push(candidate);
+            chosenIds.add(candidate.id);
+            chosenTexts.add(candidate.text);
+            distribution[lvl.id] = (distribution[lvl.id] || 0) + 1;
+            countAssigned++;
+            taken++;
           }
         }
       } else {

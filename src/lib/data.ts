@@ -1,4 +1,5 @@
 import type { DemoUser, SeedData, Competency, Question, Student, Classroom, StudyMaterial, SavedQuestionSet } from '../types';
+import { ncertQuestions, ncertCompetencies } from './ncert-questions';
 
 export const demoUsers: DemoUser[] = [
   { username: 'teacher.sunita', password: 'Teacher@123', name: 'Sunita Devi (Jha)', role: 'TEACHER', mobileNumber: '+91 98765 43210', teacherId: 'HV-SRW-0142' },
@@ -998,18 +999,27 @@ export const seedSavedSets: SavedQuestionSet[] = [
 ];
 
 // ── Competencies & Questions for Knowledge Graph Engine ─────────────────────
-export const competencies: Competency[] = [];
-// Seed with hand-authored real questions first so the paper generator (which
-// finds the first subject+level match) prefers real content over templates below.
-const seenRealQuestionKeys = new Set<string>();
-export const questions: Question[] = seedSavedSets
-  .flatMap(set => set.questions)
-  .filter(q => {
-    const key = `${q.subjectId}|${q.levelId}`;
-    if (seenRealQuestionKeys.has(key)) return false;
-    seenRealQuestionKeys.add(key);
-    return true;
-  });
+export const competencies: Competency[] = [...ncertCompetencies];
+
+/**
+ * Question pool order is load-bearing. The paper generator takes the first
+ * subject+level match, so the pool is built best-content-first:
+ *   1. NCERT curriculum questions
+ *   2. hand-authored questions from the saved sets
+ *   3. generated template questions (filler for coverage)
+ * Entries are de-duplicated on subject|level|text, so the same item authored
+ * in two places appears once.
+ */
+export const questions: Question[] = [];
+const seenQuestionText = new Set<string>();
+function addQuestion(q: Question): void {
+  const key = `${q.subjectId}|${q.levelId}|${q.text}`;
+  if (seenQuestionText.has(key)) return;
+  seenQuestionText.add(key);
+  questions.push(q);
+}
+ncertQuestions.forEach(addQuestion);
+seedSavedSets.flatMap(set => set.questions).forEach(addQuestion);
 
 const domainsBySubject: Record<string, string[]> = {
   hin: ['ध्वनि व वर्ण पहचान', 'शब्द रचना', 'वाक्य व अर्थग्रहण', 'रचनात्मक अभिव्यक्ति'],
@@ -1052,7 +1062,7 @@ for (const stdId of standards) {
         });
 
         // Add 2 questions per competency
-        questions.push({
+        addQuestion({
           id: `q-${questionCounter++}`,
           standardId: stdId,
           subjectId: subId,
@@ -1065,7 +1075,7 @@ for (const stdId of standards) {
           type: 'MCQ',
         });
 
-        questions.push({
+        addQuestion({
           id: `q-${questionCounter++}`,
           standardId: stdId,
           subjectId: subId,

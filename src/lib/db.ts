@@ -26,7 +26,7 @@ class ShikshaSetuDatabase extends Dexie {
 }
 
 const database = new ShikshaSetuDatabase();
-const SEED_ID = 'seed-data-v6';
+const SEED_ID = 'seed-data-v7';
 
 export async function loadData(): Promise<SeedData> {
   const existing = await database.payload.get(SEED_ID);

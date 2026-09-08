@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import type { GeneratedPaper } from '../types';
+import { paperHasDevanagari, downloadPaperAsImagePdf } from './pdf-devanagari';
 
 // ============================================================================
 // DEVANAGARI FONT SUPPORT
@@ -49,7 +50,12 @@ function setFontForContent(doc: jsPDF, text: string, isBold = false): void {
  * Prefills Class and Subject. Leaves Roll Number blank for the student to write.
  * Supports both English and Hindi (Devanagari) text.
  */
-export function downloadStudentPaper(paper: GeneratedPaper): void {
+export async function downloadStudentPaper(paper: GeneratedPaper): Promise<void> {
+  // The 14 standard PDF fonts are Latin-1 only and jsPDF does no OpenType
+  // shaping, so Devanagari cannot render on the vector path. Hand those
+  // papers to the browser-shaped renderer instead.
+  if (paperHasDevanagari(paper)) return downloadPaperAsImagePdf(paper, false);
+
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -216,7 +222,12 @@ export function downloadStudentPaper(paper: GeneratedPaper): void {
  * Generates and downloads the Answer Key PDF for Teachers using jsPDF.
  * Supports both English and Hindi (Devanagari) text.
  */
-export function downloadAnswerKey(paper: GeneratedPaper): void {
+export async function downloadAnswerKey(paper: GeneratedPaper): Promise<void> {
+  // The 14 standard PDF fonts are Latin-1 only and jsPDF does no OpenType
+  // shaping, so Devanagari cannot render on the vector path. Hand those
+  // papers to the browser-shaped renderer instead.
+  if (paperHasDevanagari(paper)) return downloadPaperAsImagePdf(paper, true);
+
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',

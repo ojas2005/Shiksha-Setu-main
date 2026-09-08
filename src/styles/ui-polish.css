@@ -863,3 +863,23 @@ select{text-overflow:ellipsis}
   .sidebar::-webkit-scrollbar{width:5px}
   .sidebar::-webkit-scrollbar-thumb{background:#cfdcd8;border-radius:4px}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Knowledge Graph editor — stop flex crushing the page.
+   .kg-editor-page is a flex column with a max-height, and .kg-tree-container
+   is a flex column with max-height:520px. Flex children default to
+   flex-shrink:1, so when a subject has more content than fits — Mathematics
+   carries 35 competencies per domain against Hindi's 15 — every child was
+   squeezed instead of the container scrolling: the subject tab row collapsed
+   from 36px to 24px and clipped its own tabs, and each .tree-domain-node was
+   crushed from 42px to 10px, leaving the grey slivers.
+
+   Pinning the children to their natural height lets the content genuinely
+   overflow, which is what the existing overflow-y:auto is there to handle.
+   The header, stats row and tab strip then stay put while only the tree
+   scrolls, so the panel no longer shifts when you switch subject.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.kg-editor-page > *{flex:0 0 auto}
+.kg-tree-container > *{flex:0 0 auto}
+.subject-tabs-row{align-items:center}
